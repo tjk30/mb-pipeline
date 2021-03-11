@@ -23,6 +23,15 @@ path <- file.path(parent, indir)
 fnFs <- sort(list.files(path, pattern = "R1.fastq.gz", full.names = TRUE))
 fnRs <- sort(list.files(path, pattern = "R2.fastq.gz", full.names = TRUE))
 
+# Inspect read quality profiles -------------------------------------------
+
+# Try for first three samples
+p <- plotQualityProfile(fnFs[1:3])
+ggsave("quality_sample_F.png", plot = p)
+
+p <- plotQualityProfile(fnRs[1:3])
+ggsave("quality_sample_R.png", plot = p)
+
 # Filter ------------------------------------------------------------------
 
 # Put N-filtered files in filtN/ subdirectory
