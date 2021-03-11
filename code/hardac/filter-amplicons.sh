@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH --job-name=filter-amplicons
+#SBATCH --mem=20000
+#SBATCH --out=reports/filter-amplicons-%j.out
+#SBATCH --error=reports/filter-amplicons-%j.err
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=END
+#SBATCH --mail-user=blp23@duke.edu
+
+cd $1
+mkdir 2_filter
+
+# Read in primer sequences from file (on separate lines in order: forward, reverse)
+{ IFS= read -r fwd && IFS= read -r rev; } < 0_reference/primers.txt
+
+for read1 in 1_trimadapter/single/*_R1_*; do
+	read2=${read1%R1_001.fastq.gz}R2_001.fastq.gz # Find its matched read 2
+
+	fullname=${read1#1_trimadapter/single/}
+	name=${fullname//_[^.]*/} # This pulls the name of the file, minus MiniSeq-added info
+
+	# Do paired-end filtering: Both R1 and R2 must have the correct amplicon primer anchored at 5' end
+	/data/davidlab/packages/cutadapt/miniconda3/bin/cutadapt \
+	--overlap 5 -e 0.15 \
+	--action=none --discard-untrimmed --pair-filter=any \
+	-g file:0_reference/barcodes_fwd.fasta \
+	-G file:0_reference/barcodes_rev.fasta \
+	-o 2_filter/${name}_R1.fastq.gz -p 2_filter/${name}_R2.fastq.gz \
+	$read1 $read2 \
+	> 2_filter/$name.out
+done
