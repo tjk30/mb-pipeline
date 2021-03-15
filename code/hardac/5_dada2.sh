@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=dada2
+#SBATCH --job-name=5_dada2
 #SBATCH --mem=40000
-#SBATCH --out=reports/dada2-%j.out
-#SBATCH --error=reports/dada2-%j.err
+#SBATCH --out=reports/5_dada2-%j.out
+#SBATCH --error=reports/5_dada2-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 #SBATCH --mail-user=blp23@duke.edu

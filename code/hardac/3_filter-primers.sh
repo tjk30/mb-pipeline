@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=filter-primers
+#SBATCH --job-name=3_filter-primers
 #SBATCH --mem=20000
-#SBATCH --out=reports/filter-primers-%j.out
-#SBATCH --error=reports/filter-primers-%j.err
+#SBATCH --out=reports/3_filter-primers-%j.out
+#SBATCH --error=reports/3_filter-primers-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 #SBATCH --mail-user=blp23@duke.edu

@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=trim-primers
+#SBATCH --job-name=4_trim-primers
 #SBATCH --mem=20000
-#SBATCH --out=reports/trim-primers-%j.out
-#SBATCH --error=reports/trim-primers-%j.err
+#SBATCH --out=reports/4_trim-primers-%j.out
+#SBATCH --error=reports/4_trim-primers-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 #SBATCH --mail-user=blp23@duke.edu
