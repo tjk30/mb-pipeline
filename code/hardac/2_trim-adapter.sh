@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=trim-adapter
+#SBATCH --job-name=2_trim-adapter
 #SBATCH --mem=20000
-#SBATCH --out=reports/trim-adapter-%j.out
-#SBATCH --error=reports/trim-adapter-%j.err
+#SBATCH --out=reports/2_trim-adapter-%j.out
+#SBATCH --error=reports/2_trim-adapter-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 #SBATCH --mail-user=blp23@duke.edu
@@ -12,15 +12,11 @@
 # primer set
 # This trims off read-through into Illumina adapter at the 3' side of the read,
 # which can occur if the amplicon size is <150 bp.
-# Also runs fastQC on reads pre- and post-trimming.
 
 module load fastqc
 
 mkdir $1/1_trimadapter
-cd $1/0_raw
-# Initial QC
-mkdir fastqc
-fastqc *.fastq.gz -o fastqc/
+cd $1/0_raw_demux
 
 for read1 in *R1_001.fastq.gz; do
 	# Find its matched read 2
@@ -34,7 +30,3 @@ for read1 in *R1_001.fastq.gz; do
 	&>> ../1_trimadapter/BBDuk.out
 done
 
-cd ../1_trimadapter
-# Now that adapters trimmed, repeat QC
-mkdir fastqc
-fastqc *.fastq.gz -o fastqc/
