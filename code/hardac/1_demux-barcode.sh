@@ -20,3 +20,7 @@ outdir=$now'_results'
 mkdir $outdir
 
 bcl2fastq -o $outdir --interop-dir InterOp/$now --stats-dir Stats/$now --reports-dir Reports/$now --minimum-trimmed-read-length 0 --mask-short-adapter-reads 0 --sample-sheet ../$2
+
+# Convert, but don't demultiplex (amalgamated data used for downstream quality plot)
+# R: runfolder dir
+bcl2fastq -R . -o $outdir
