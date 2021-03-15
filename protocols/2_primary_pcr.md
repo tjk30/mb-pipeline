@@ -11,7 +11,7 @@
 
 ## Protocol
 **Location:** PCR hood or separate room/area from other steps.
-- [ ] Treat PCR area with UV light for ~15 minutes.
+- [ ] Treat PCR area with UV light for ~20 minutes.
 - [ ] Generate enough PCR master mix for the reactions desired according to **Table 1**. Note: The reaction mix and plate must be kept on ice; otherwise, the exonuclease in the enzyme can degrade the primers prior to the start of the reaction.
 - [ ] Aliquot 7 µl mix into each well.
 - [ ] Add 3 ul water to negative control well.
