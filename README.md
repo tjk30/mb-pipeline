@@ -2,8 +2,10 @@
 
 ## Wet lab protocols
 
-1. Primary PCR
-2. Indexing PCR
+1. DNA extraction
+2. Primary PCR
+3. Dilution
+4. Indexing PCR
 
 ## Computational pipeline
 
