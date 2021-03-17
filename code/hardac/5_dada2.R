@@ -25,12 +25,24 @@ fnRs <- sort(list.files(path, pattern = "R2.fastq.gz", full.names = TRUE))
 
 # Inspect read quality profiles -------------------------------------------
 
-# Try for first three samples
+# Example, using first three samples
 p <- plotQualityProfile(fnFs[1:3])
-ggsave("quality_sample_F.png", plot = p)
+ggsave(file.path(outdir, "quality_sample_F.png"), plot = p)
 
 p <- plotQualityProfile(fnRs[1:3])
-ggsave("quality_sample_R.png", plot = p)
+ggsave(file.path(outdir, "quality_sample_R.png"), plot = p)
+
+# Overall quality of complete dataset (non-demultiplexed reads)
+raw.fs <- 
+     file.path(parent, '0_raw_all') %>%
+     list.files(full.names = TRUE)
+
+p <- plotQualityProfile(raw.fs[1]) # R1
+ggsave(file.path(outdir, "quality_all_F.png"), plot = p)
+
+p <- plotQualityProfile(raw.fs[2]) # R2
+ggsave(file.path(outdir, "quality_all_R.png"), plot = p)
+
 
 # Filter ------------------------------------------------------------------
 
@@ -41,9 +53,9 @@ fnRs_filtN <- file.path(path, "filtN", basename(fnRs))
 filt.out <- filterAndTrim(fnFs, fnFs_filtN, fnRs, fnRs_filtN, 
                           maxN = 0, 
                           maxEE = 2,
-                          truncQ = 2, 
+                          truncQ = 20, # Opting for this over truncLen, because reads < truncLen discarded
                           minLen = 10, # Setting this because min length of P6 is 10
-                          rm.phix = TRUE, compress = TRUE, multithread = TRUE)
+                          multithread = TRUE)
 
 # Remove from our list files that now have 0 reads due to filtering
 fnFs_filtN <- fnFs_filtN[file.exists(fnFs_filtN)]
