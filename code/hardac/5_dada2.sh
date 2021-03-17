@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=5_dada2
-#SBATCH --mem=40000
+#SBATCH --mem=64000
 #SBATCH -n 2  # Number of cores
 #SBATCH --out=reports/5_dada2-%j.out
 #SBATCH --error=reports/5_dada2-%j.err
