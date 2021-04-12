@@ -13,8 +13,6 @@
 # This trims off read-through into Illumina adapter at the 3' side of the read,
 # which can occur if the amplicon size is <150 bp.
 
-module load fastqc
-
 mkdir $1/1_trimadapter
 cd $1/0_raw_demux
 
