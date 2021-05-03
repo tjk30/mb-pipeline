@@ -7,7 +7,7 @@
 ## Protocol
 **Location:** Clean, post-PCR processing lab bench.
 **Note:** This protocol assumes that ~5 ul of primary PCR product remains in the reaction plate after running products on a gel.
-- [ ]  Add 45 ul of water to remaining volume (~5 ul) in each PCR A sample well (1:10 dilution).
+- [ ]  Add 45 ul of water to remaining volume (~5 ul) in each primar PCR reaction well (1:10 dilution).
 - [ ]  Mix by gently pipetting up and down 10X.
 - [ ]  Transfer 5 ul of the 1:10 dilution to a new plate.
 - [ ]  Add 45 ul of water to the 1:10 dilution to make a 1:100 dilution.  
