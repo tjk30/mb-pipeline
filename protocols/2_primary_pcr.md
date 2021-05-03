@@ -21,7 +21,8 @@
 - [ ] Briefly spin down the plate (30 seconds at 1K rpm in bench-top centrifuge).  
 - [ ] Run qPCR with cycling conditions from **Table 2**.
 - [ ] After qPCR run is done, transfer plates to -20˚C if processing is going to be paused.  Otherwise, keep plates at 4˚C.  
-- [ ] Inspect qPCR curves and/or run 5 ul on an agarose gel or E-gel to confirm amplification.
+- [ ] Inspect qPCR curves to confirm amplification and/or run 5 ul on an agarose gel or E-gel to confirm a single band of expected size.
+- [ ] Proceed to [Protocol 3: Dilution](https://github.com/bpetrone/mb-pipeline/edit/master/protocols/3_dilution.md)
 
 **Table 1. Primary PCR Master Mix**
 Component	| 1 Rxn (µL) | 100 Rxns (µL) 
