@@ -5,7 +5,7 @@
 - [ ] 10µM working stock of *trnL*-P6 forward primer with Illumina bridges (BP031)
 - [ ] 10µM working stock of *trnL*-P6 reverse primer with Illumina bridges (BP032)
 - [ ] SYBR Green I - diluted in DMSO to 100x
-- [ ] gDNA from [Protocol 1: DNA extraction](https://github.com/bpetrone/mb-pipeline/blob/342c3ab9ac3bf0f0611c9beb7d45cc0bc00c2e67/protocols/1_dna_extraction.md) or other source in a 96 well plate
+- [ ] gDNA from [Protocol 1: DNA extraction](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/1_dna_extraction.md) or other source in a 96 well plate
 - [ ] Positive control template DNA
 - [ ] Nuclease-free H<sub>2</sub>O
 
