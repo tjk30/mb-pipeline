@@ -4,7 +4,7 @@
 - [ ] KAPA HiFi Hot Start PCR kit (KAPA KK2502)
 - [ ] Pre-mixed Illumina-compatible barcoding primers, 2.5 uM each primer, 5 uM total (Ordered from IDT, diluted and mixed in-house)
 - [ ] SYBR Green I - diluted in DMSO to 100x
-- [ ] Primary PCR-amplified template diluted 1:100 from [Protocol 3: Dilution](https://github.com/bpetrone/mb-pipeline/blob/dfafcbb40f3d22f5a231bf532930bf5d98162f80/protocols/3_dilution.md), including any positive and negative controls
+- [ ] Primary PCR-amplified template diluted 1:100 from [Protocol 3: Dilution](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/3_dilution.md), including any positive and negative controls
 - [ ] Nuclease-free H<sub>2</sub>O
 
 ## Protocol
@@ -34,7 +34,7 @@ KAPA HiFi polymerase	| 0.5	| 50
 Cycle |	Temperature (˚C)  | Time
 ------|-------------------|------
 Initial Denaturation   |	95	| 5 min
-35 cycles:
+10 cycles:
 Denature | 98˚C | 20 sec
 Anneal | 55˚C	| 15 sec
 Extend | 72˚C | 1 min
