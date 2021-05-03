@@ -12,4 +12,4 @@
 - [ ]  Transfer 5 ul of the 1:10 dilution to a new plate.
 - [ ]  Add 45 ul of water to the 1:10 dilution to make a 1:100 dilution.  
 - [ ]  Mix by gently pipetting up and down 10X.
-- [ ]  Seal plate with foil, store in refridgerator for short-term use, or proceed directly to [Protocol 4: Indexing PCR](https://github.com/bpetrone/mb-pipeline/blob/dfafcbb40f3d22f5a231bf532930bf5d98162f80/protocols/4_indexing_pcr.md).  Store 1:10 dilution plate in freezer as back-up. 
+- [ ]  Seal plate with foil, store in refrigerator for short-term use, or proceed directly to [Protocol 4: Indexing PCR](https://github.com/bpetrone/mb-pipeline/blob/dfafcbb40f3d22f5a231bf532930bf5d98162f80/protocols/4_indexing_pcr.md).  Store 1:10 dilution plate in freezer as back-up. 
