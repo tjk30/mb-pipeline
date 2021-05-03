@@ -2,7 +2,7 @@
 
 ## Materials
 - [ ] PCR A products from [Protocol 2: Primary PCR](https://github.com/bpetrone/mb-pipeline/blob/84c03c17be745f4703d43497eed5f8ed10653c57/protocols/2_primary_pcr.md)
-- [ ] Nuclease-free H_2O
+- [ ] Nuclease-free H<sub>2</sub>O
 
 ## Protocol
 **Location:** Clean, post-PCR processing lab bench.
