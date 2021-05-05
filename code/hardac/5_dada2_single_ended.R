@@ -89,7 +89,7 @@ names(dereps) <- sample_names
 # Apply core sample inference algorithm to dereplicated sequences
 # Save R objects throughout to allow return to data if follow-up needed
 
-dadas <- dada(dereps, err = errs, multithread = TRUE)
+dadas <- dada(dereps, err = err, multithread = TRUE)
 
 saveRDS(dadas, 'dadas.rds')
 
