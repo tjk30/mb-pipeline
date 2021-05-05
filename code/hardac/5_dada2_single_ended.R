@@ -117,6 +117,8 @@ filt.out %>%
        select(sample, input = reads.in, filtered=reads.out) ->
        track
 
+getN <- function(x) sum(getUniques(x))
+
 sapply(dadas, getN) %>%
        enframe(name="sample", value="denoised") ->
        denoised
