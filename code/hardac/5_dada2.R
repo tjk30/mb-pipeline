@@ -62,6 +62,7 @@ fnRs_filtN <- file.path(path, "filtN", basename(fnRs))
 filt.out <- filterAndTrim(fnFs, fnFs_filtN, fnRs, fnRs_filtN, 
                           maxN = 0, 
                           maxEE = 2,
+                          truncQ = 2,
                           minLen = 10, # trnL-P6 parameters
                           maxLen = 143, # trnL-P6 parameters
                           multithread = TRUE)
