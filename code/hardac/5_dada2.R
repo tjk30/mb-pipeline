@@ -25,12 +25,21 @@ fnRs <- sort(list.files(path, pattern = "R2.fastq.gz", full.names = TRUE))
 
 # Inspect read quality profiles -------------------------------------------
 
-# Example, using first three samples
-p <- plotQualityProfile(fnFs[1:3])
-ggsave(file.path(outdir, "quality_sample_F.png"), plot = p)
+# Each sample individually
+# Estimate plot width and height based on number of samples in each row or
+# column
+wh <- 
+     length(fnFs) %>% 
+     sqrt() %>% 
+     ceiling()
 
-p <- plotQualityProfile(fnRs[1:3])
-ggsave(file.path(outdir, "quality_sample_R.png"), plot = p)
+p <- plotQualityProfile(fnFs)
+ggsave(file.path(outdir, "quality_F.pdf"), plot = p,
+       width = 7*wh, height = 7*wh, limitsize = FALSE)
+
+p <- plotQualityProfile(fnRs)
+ggsave(file.path(outdir, "quality_F.pdf"), plot = p,
+       width = 7*wh, height = 7*wh, limitsize = FALSE)
 
 # Overall quality of complete dataset (non-demultiplexed reads)
 raw.fs <- 
@@ -38,10 +47,10 @@ raw.fs <-
      list.files(full.names = TRUE)
 
 p <- plotQualityProfile(raw.fs[1]) # R1
-ggsave(file.path(outdir, "quality_all_F.png"), plot = p)
+ggsave(file.path(outdir, "quality_F_summary.png"), plot = p)
 
 p <- plotQualityProfile(raw.fs[2]) # R2
-ggsave(file.path(outdir, "quality_all_R.png"), plot = p)
+ggsave(file.path(outdir, "quality_R_summary.png"), plot = p)
 
 
 # Filter ------------------------------------------------------------------
