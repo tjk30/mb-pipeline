@@ -62,8 +62,8 @@ fnRs_filtN <- file.path(path, "filtN", basename(fnRs))
 filt.out <- filterAndTrim(fnFs, fnFs_filtN, fnRs, fnRs_filtN, 
                           maxN = 0, 
                           maxEE = 2,
-                          truncQ = 20, # Opting for this over truncLen, because reads < truncLen discarded
-                          minLen = 10, # Setting this because min length of P6 is 10
+                          minLen = 10, # trnL-P6 parameters
+                          maxLen = 143, # trnL-P6 parameters
                           multithread = TRUE)
 
 # Remove from our list files that now have 0 reads due to filtering
