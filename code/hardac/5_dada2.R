@@ -38,7 +38,7 @@ ggsave(file.path(outdir, "quality_F.pdf"), plot = p,
        width = 7*wh, height = 7*wh, limitsize = FALSE)
 
 p <- plotQualityProfile(fnRs)
-ggsave(file.path(outdir, "quality_F.pdf"), plot = p,
+ggsave(file.path(outdir, "quality_R.pdf"), plot = p,
        width = 7*wh, height = 7*wh, limitsize = FALSE)
 
 # Overall quality of complete dataset (non-demultiplexed reads)
