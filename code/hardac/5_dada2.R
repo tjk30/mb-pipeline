@@ -63,8 +63,10 @@ filt.out <- filterAndTrim(fnFs, fnFs_filtN, fnRs, fnRs_filtN,
                           maxN = 0, 
                           maxEE = 2,
                           truncQ = 2,
-                          minLen = 10, # trnL-P6 parameters
+                          minLen = 10, # trnL-P6 parameters (Taberlet)
                           maxLen = 143, # trnL-P6 parameters
+                          # minLen = 56, # 12SV5 parameters (Schneider)
+                          # maxLen = 132, # 12SV5 parameters
                           multithread = TRUE)
 
 # Remove from our list files that now have 0 reads due to filtering
