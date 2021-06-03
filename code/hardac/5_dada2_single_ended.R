@@ -25,9 +25,32 @@ fns <- sort(list.files(path, pattern = ".fastq.gz", full.names = TRUE))
 
 # Inspect read quality profiles -------------------------------------------
 
-# Example, using random three samples
-p <- plotQualityProfile(sample(fns, 3))
-ggsave(file.path(outdir, "quality_sample.png"), plot = p)
+# Each sample individually
+# Estimate plot width and height based on number of samples in each row or
+# column
+wh <- 
+     length(fnFs) %>% 
+     sqrt() %>% 
+     ceiling()
+
+p <- plotQualityProfile(fnFs)
+ggsave(file.path(outdir, "quality_F.pdf"), plot = p,
+       width = 7*wh, height = 7*wh, limitsize = FALSE)
+
+p <- plotQualityProfile(fnRs)
+ggsave(file.path(outdir, "quality_R.pdf"), plot = p,
+       width = 7*wh, height = 7*wh, limitsize = FALSE)
+
+# Overall quality of complete dataset (non-demultiplexed reads)
+raw.fs <- 
+     file.path(parent, '0_raw_all') %>%
+     list.files(full.names = TRUE)
+
+p <- plotQualityProfile(raw.fs[1]) # R1
+ggsave(file.path(outdir, "quality_F_summary.png"), plot = p)
+
+p <- plotQualityProfile(raw.fs[2]) # R2
+ggsave(file.path(outdir, "quality_R_summary.png"), plot = p)
 
 # Filter ------------------------------------------------------------------
 
@@ -37,8 +60,11 @@ fns_filtN <- file.path(path, "filtN", basename(fns))
 filt.out <- filterAndTrim(fns, fns_filtN,
                           maxN = 0, 
                           maxEE = 2,
-                          truncQ = 20, # Opting for this over truncLen, because reads < truncLen discarded
-                          minLen = 10, # Setting this because min length of P6 is 10
+                          truncQ = 20,
+                          # minLen = 10, # trnL-P6 parameters (Taberlet)
+                          # maxLen = 143, # trnL-P6 parameters
+                          minLen = 56, # 12SV5 parameters (Schneider)
+                          maxLen = 132, # 12SV5 parameters
                           multithread = TRUE)
 
 # Remove from our list files that now have 0 reads due to filtering
