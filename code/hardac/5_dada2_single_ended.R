@@ -29,7 +29,7 @@ fns <- sort(list.files(path, pattern = ".fastq.gz", full.names = TRUE))
 # Estimate plot width and height based on number of samples in each row or
 # column
 wh <- 
-     length(fnFs) %>% 
+     length(fns) %>% 
      sqrt() %>% 
      ceiling()
 
