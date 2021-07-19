@@ -11,7 +11,7 @@
 # This assumes that the sample sheet is located in the parent directory containing the MiniSeq results
 # folder
 
-module load bcl2fastq2 
+conda activate base
 
 cd $1
 
