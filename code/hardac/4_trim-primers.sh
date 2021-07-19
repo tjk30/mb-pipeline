@@ -11,6 +11,8 @@
 # where marker-dir is the directory containing reads that all share the same 
 # primer set 
 
+conda activate cutadaptenv
+
 # Go to amplicon directory
 cd $1
 mkdir 3_trimprimer
@@ -41,7 +43,7 @@ for read1 in 2_*/*_R1.fastq.gz; do
 	# --minimum-length: Set this parameter so cutadapt doesn't preserve empty reads (length 0) in output,
 	# which can't be handled by DADA2
 
-	/data/davidlab/packages/cutadapt/miniconda3/bin/cutadapt \
+	cutadapt \
 	--minimum-length 1 --discard-untrimmed \
 	-a "^${fwd:0};e=0.15...$revrc;e=0.15" \
 	-A "^${rev:0};e=0.15...$fwdrc;e=0.15" \
