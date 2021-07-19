@@ -7,6 +7,9 @@
 #SBATCH --mail-type=END
 #SBATCH --mail-user=blp23@duke.edu
 
+# Load cutadapt in conda environment
+conda activate cutadaptenv
+
 cd $1
 mkdir 2_filter
 
