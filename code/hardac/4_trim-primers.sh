@@ -11,7 +11,7 @@
 # where marker-dir is the directory containing reads that all share the same 
 # primer set 
 
-conda activate cutadaptenv
+conda activate base
 
 # Go to amplicon directory
 cd $1
