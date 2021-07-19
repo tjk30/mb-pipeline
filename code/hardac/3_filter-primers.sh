@@ -23,7 +23,7 @@ for read1 in 1_trimadapter/*_R1_*; do
 	name=${fullname//_[^.]*/} # This pulls the name of the file, minus MiniSeq-added info
 
 	# Do paired-end filtering: Both R1 and R2 must have the correct amplicon primer anchored at 5' end
-	/data/davidlab/packages/cutadapt/miniconda3/bin/cutadapt \
+	cutadapt \
 	--overlap 5 -e 0.15 \
 	--action=none --discard-untrimmed --pair-filter=any \
 	-g $fwd \
