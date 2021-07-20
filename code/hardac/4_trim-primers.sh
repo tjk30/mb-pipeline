@@ -11,6 +11,7 @@
 # where marker-dir is the directory containing reads that all share the same 
 # primer set 
 
+source /data/davidlab/packages/miniconda3/etc/profile.d/conda.sh
 conda activate base
 
 # Go to amplicon directory
