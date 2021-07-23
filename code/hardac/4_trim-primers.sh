@@ -30,9 +30,9 @@ mkdir 3_trimprimer
 
 # Determine if analyzing one read or two
 # Is R1 missing? 
-if ! ls 2_filter/*_R1_* 1> /dev/null 2>&1; then
+if ! ls 2_filter/*_R1.fastq.gz 1> /dev/null 2>&1; then
 	echo "R1 does not exist, analyzing R2 only"
-	for read2 in 2_filter/*_R2_*; do 
+	for read2 in 2_filter/*_R2.fastq.gz; do 
 		fullname=${read2#2_filter/}
 		name=${fullname//_[^.]*/} # Pull filename without MiniSeq-added info
 
@@ -55,9 +55,9 @@ if ! ls 2_filter/*_R1_* 1> /dev/null 2>&1; then
 		> 3_trimprimer/$name.out	
 	done
 # Is R2 missing?  
-elif ! ls 2_filter/*_R2_* 1> /dev/null 2>&1; then
+elif ! ls 2_filter/*_R2.fastq.gz 1> /dev/null 2>&1; then
 	echo "R2 does not exist, analyzing R1 only"
-	for read1 in 2_filter/*_R1_*; do 
+	for read1 in 2_filter/*_R1.fastq.gz; do 
 		fullname=${read1#2_filter/}
 		name=${fullname//_[^.]*/} # Pull filename without MiniSeq-added info
 
@@ -71,7 +71,7 @@ elif ! ls 2_filter/*_R2_* 1> /dev/null 2>&1; then
 	done
 # Both reads present, perform paired-end trimming
 else
-	for read1 in 2_*/*_R1.fastq.gz; do
+	for read1 in 2*/*_R1.fastq.gz; do
 		read2=${read1%R1.fastq.gz}R2.fastq.gz # Find its matched read 2
 		regex='([^_]*)(_.*)' # Match up to first underscore to get name
 		# 1st capture group
