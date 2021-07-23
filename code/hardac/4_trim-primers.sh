@@ -65,7 +65,7 @@ elif ! ls 2_filter/*_R2.fastq.gz 1> /dev/null 2>&1; then
 		# R1 must have the correct amplicon primer anchored at 5' end
 		cutadapt \
 		--minimum-length 1 --discard-untrimmed \
-		-a "^${rev:0};e=0.15...$fwdrc;e=0.15" \
+		-a "^${fwd:0};e=0.15...$revrc;e=0.15" \
 		-o 3_trimprimer/$fullname $read1 \
 		> 3_trimprimer/$name.out	
 	done
