@@ -17,12 +17,13 @@ mkdir 2_filter
 # Read in primer sequences from file (on separate lines in order: forward, reverse)
 { IFS= read -r fwd && IFS= read -r rev; } < 0_reference/primers.txt
 
+# Determine if analyzing one read or two
 # Is R1 missing? 
 if ! ls 1_trimadapter/*_R1_* 1> /dev/null 2>&1; then
 	echo "R1 does not exist, analyzing R2 only"
 	for read2 in 1_trimadapter/*_R2_*; do 
 		fullname=${read2#1_trimadapter/}
-		name=${fullname//_[^.]*/} # This pulls the name of the file, minus MiniSeq-added info
+		name=${fullname//_[^.]*/} # Pull filename without MiniSeq-added info
 
 		# Do single-end filtering:
 		# R2 must have the correct amplicon primer anchored at 5' end
@@ -31,14 +32,13 @@ if ! ls 1_trimadapter/*_R1_* 1> /dev/null 2>&1; then
 		--action=none --discard-untrimmed \
 		-g $rev -o 2_filter/${name}_R2.fastq.gz $read2 \
 		> 2_filter/$name.out
-done
-
+	done
 # Is R2 missing?  
 elif ! ls 1_trimadapter/*_R2_* 1> /dev/null 2>&1; then
 	echo "R2 does not exist, analyzing R1 only"
 	for read1 in 1_trimadapter/*_R1_*; do 
 		fullname=${read1#1_trimadapter/}
-		name=${fullname//_[^.]*/} # This pulls the name of the file, minus MiniSeq-added info
+		name=${fullname//_[^.]*/} # Pull filename without MiniSeq-added info
 
 		# Do single-end filtering:
 		# R1 must have the correct amplicon primer anchored at 5' end
@@ -57,9 +57,10 @@ else
 		read2=${read1%R1_001.fastq.gz}R2_001.fastq.gz # Find its matched read 2
 
 		fullname=${read1#1_trimadapter}
-		name=${fullname//_[^.]*/} # This pulls the name of the file, minus MiniSeq-added info
+		name=${fullname//_[^.]*/} # Pull filename without MiniSeq-added info
 
-		# Do paired-end filtering: Both R1 and R2 must have the correct amplicon primer anchored at 5' end
+		# Do paired-end filtering: Both R1 and R2 must have the correct amplicon primer 
+		# anchored at 5' end
 		cutadapt \
 		--overlap 5 -e 0.15 \
 		--action=none --discard-untrimmed --pair-filter=any \
@@ -70,3 +71,5 @@ else
 		> 2_filter/$name.out
 	done
 fi
+
+conda deactivate # Close conda environment
