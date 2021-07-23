@@ -18,8 +18,15 @@ conda activate base
 cd $1
 mkdir 3_trimprimer
 
-# Read in primer sequences from file (in order: forward; reverse; reverse complement of forward; and reverse complement of reverse)
-{ IFS= read -r fwd && IFS= read -r rev && IFS= read -r fwdrc && IFS= read -r revrc; } < 0_reference/primers.txt
+# Read in primer sequences from file 
+# (in order: 
+#  forward
+#  reverse
+#  reverse complement of forward
+#  reverse complement of reverse
+# )
+{ IFS= read -r fwd && IFS= read -r rev && IFS= read -r fwdrc && IFS= read -r revrc; } < \
+	0_reference/primers.txt
 
 # Determine if analyzing one read or two
 # Is R1 missing? 
@@ -54,7 +61,7 @@ elif ! ls 2_filter/*_R2_* 1> /dev/null 2>&1; then
 		fullname=${read1#2_filter/}
 		name=${fullname//_[^.]*/} # Pull filename without MiniSeq-added info
 
-		# Do single-end filtering:
+		# Do single-end trimming:
 		# R1 must have the correct amplicon primer anchored at 5' end
 		cutadapt \
 		--minimum-length 1 --discard-untrimmed \
@@ -62,14 +69,17 @@ elif ! ls 2_filter/*_R2_* 1> /dev/null 2>&1; then
 		-o 3_trimprimer/$fullname $read1 \
 		> 3_trimprimer/$name.out	
 	done
+# Both reads present, perform paired-end trimming
 else
-	# Remove forward and reverse primer from paired-end reads
 	for read1 in 2_*/*_R1.fastq.gz; do
 		read2=${read1%R1.fastq.gz}R2.fastq.gz # Find its matched read 2
 		regex='([^_]*)(_.*)' # Match up to first underscore to get name
-		name=$([[ ${read1##*/} =~ $regex ]] && echo "${BASH_REMATCH[1]}") # 1st capture grp
-		suffix1=$([[ ${read1##*/} =~ $regex ]] && echo "${BASH_REMATCH[2]}") # 2nd capture grp
-		suffix2=$([[ ${read2##*/} =~ $regex ]] && echo "${BASH_REMATCH[2]}") # 2nd capture grp
+		# 1st capture group
+		name=$([[ ${read1##*/} =~ $regex ]] && echo "${BASH_REMATCH[1]}")
+		# 2nd capture group
+		suffix1=$([[ ${read1##*/} =~ $regex ]] && echo "${BASH_REMATCH[2]}")
+	        # 2nd capture group	
+		suffix2=$([[ ${read2##*/} =~ $regex ]] && echo "${BASH_REMATCH[2]}")
 		
 		# Perform paired-end trimming with cutadapt:
 		# -a: Trim adapter from forward read
