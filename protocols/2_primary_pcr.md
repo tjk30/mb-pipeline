@@ -1,4 +1,4 @@
-# Protocol 2: Primary PCR
+# Protocol 2A: Primary qPCR (trnL)
 
 ## Materials
 - [ ] KAPA HiFi Hot Start PCR kit (KAPA KK2502)
@@ -12,7 +12,7 @@
 ## Protocol
 **Location:** PCR hood or separate room/area from other steps.
 - [ ] Treat PCR area with UV light for ~15 minutes.
-- [ ] Generate enough PCR master mix for the reactions desired according to **Table 1**. Note: The reaction mix and plate must be kept on ice; otherwise, the exonuclease in the enzyme can degrade the primers prior to the start of the reaction.
+- [ ] Generate enough PCR master mix for the reactions desired according to **Table 1**. Note: The reaction mix and plate must be kept on ice; otherwise, the exonuclease in the enzyme can degrade the primers prior to the start of the reaction. Leave the polymerase in the freezer until use.
 - [ ] Aliquot 7 µl mix into each well.
 - [ ] Add 3 ul water to negative control well.
 - [ ] Add 3 µl of DNA template to sample wells.
@@ -39,7 +39,7 @@ KAPA HiFi polymerase	| 0.1	| 10
 **Table 2. Primary PCR Amplification Parameters**
 Cycle |	Temperature (˚C)  | Time
 ------|-------------------|------
-Initial Denaturation   |	95	| 5 min
+Initial Denaturation   |	95	| 3 min
 35 cycles:
 Denature | 98˚C | 20 sec
 Anneal | 63˚C	| 15 sec
