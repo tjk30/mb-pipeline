@@ -25,23 +25,23 @@
 - [ ] Proceed to [Protocol 3: Dilution](https://github.com/bpetrone/mb-pipeline/edit/master/protocols/3_dilution.md)
 
 **Table 1. Primary PCR Master Mix**
-Component	| 1 Rxn (µL) | 100 Rxns (µL) 
-----------|------------|--------------
-Nuclease-free H_2O	| 3.5 | 350
-10 µM Forward primer	| 0.5	| 50
-10 µM Reverse primer	| 0.5	| 50
-5x KAPA HiFi Buffer	| 2	| 200
-10 mM dNTPs	| 0.3 |	30
-100x SYBR Green	| 0.1	| 10
-KAPA HiFi polymerase	| 0.1	| 10
-**Total**	| **7.0**	| **700**
+| Component	| 1 Rxn (µL) | 100 Rxns (µL) |
+| ----------|------------|-------------- |
+| Nuclease-free H_2O	| 3.5 | 350 |
+| 10 µM Forward primer	| 0.5	| 50 |
+| 10 µM Reverse primer	| 0.5	| 50 |
+| 5x KAPA HiFi Buffer	| 2	| 200 |
+| 10 mM dNTPs	| 0.3 |	30 |
+| 100x SYBR Green	| 0.1	| 10 |
+| KAPA HiFi polymerase	| 0.1	| 10 |
+| **Total**	| **7.0**	| **700**|
 
 **Table 2. Primary PCR Amplification Parameters**
-Cycle |	Temperature (˚C)  | Time
-------|-------------------|------
-Initial Denaturation   |	95	| 3 min
-35 cycles:
-Denature | 98˚C | 20 sec
-Anneal | 63˚C	| 15 sec
-Extend | 72˚C | 15 sec
-Holding	| 4˚C	Hold | For ever
+| Cycle |	Temperature (˚C)  | Time |
+| ------|-------------------|------ |
+| Initial Denaturation   |	95	| 3 min |
+| 35 cycles: |
+| Denature | 98˚C | 20 sec |
+| Anneal | 63˚C	| 15 sec |
+| Extend | 72˚C | 15 sec |
+| Holding	| 4˚C	Hold | For ever |
