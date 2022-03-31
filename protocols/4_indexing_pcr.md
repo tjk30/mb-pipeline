@@ -37,5 +37,5 @@ Initial Denaturation   |	95	| 5 min
 10 cycles:
 Denature | 98˚C | 20 sec
 Anneal | 55˚C	| 15 sec
-Extend | 72˚C | 1 min
+Extend | 72˚C | 30 sec
 Holding	| 4˚C	Hold | For ever
