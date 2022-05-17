@@ -1,0 +1,274 @@
+---
+title: "12SV5 MiniSeq analysis template"
+output: html_notebook
+---
+
+Run description:
+
+# Setup 
+
+```{r setup, include=FALSE, echo=FALSE}
+require("knitr")
+opts_knit$set(root.dir = file.path(getwd(), '..'))
+```
+
+```{r}
+library(dada2)
+library(here)
+library(phyloseq)
+library(tidyverse)
+
+# Modified assignSpecies function
+source(here('code', 'functions', 'assignSpecies_mod.R'))
+```
+
+```{r}
+# Paths
+data.dir <- here() # Fill in with pointer to directory with pipeline count files
+dada2.dir <- here() # Fill in with pointer to directory with DADA2 output files
+```
+
+# QC
+
+## Track variables
+
+```{r}
+# Helper function to parse text files
+read_counts <- function(f){
+     counts.text <- read.table(f)
+     
+     # Odd rows are sample names, evens are read counts
+     n <- dim(counts.text)[1]
+     
+     # Get file basename
+     name <- gsub('.txt', '', basename(f))
+     
+     counts.raw <- 
+          # Pull sample name lines
+          data.frame(sample = counts.text$V1[seq(from = 1, to = n, by = 2)]) %>% 
+          # Remove Illumina suffix
+          mutate(sample = gsub(pattern = '_.*', '', sample),
+                 # Pull count lines
+                 !!name := as.numeric(counts.text$V1[seq(from = 2, to = n, 
+                                                         by = 2)]))
+     
+     counts.raw
+}
+```
+
+```{r}
+# Get all count files for this run
+data.dir <- here() # Fill in with pointer to directory with pipeline count files
+count.fs <- list.files(data.dir, pattern = '.txt', full.names = TRUE)
+
+# Read them
+count.fs <- lapply(count.fs, read_counts)
+
+# Bind into shared dataframe
+track.pipeline <- reduce(count.fs, left_join, by = 'sample')
+names(track.pipeline) <- c('sample', 'raw', 'adapter_trim', 'primer_filter',
+                           'primer_trim')
+
+rm(count.fs)
+```
+
+```{r}
+dada2.dir <- here() # Fill in with pointer to directory with DADA2 output files
+
+track <- 
+     readRDS(file.path(dada2.dir, 'track.rds')) %>% 
+     data.frame()
+
+head(track)
+```
+
+```{r}
+# Join to pipeline track, update names
+track <- left_join(track.pipeline, track, by = c('sample', 
+                                                 'primer_trim' = 'input'))
+
+rm(track.pipeline)
+```
+
+### Reads over pipeline steps
+
+```{r}
+# Reshape for plotting
+track.long <- pivot_longer(track, 
+                           cols = -sample,
+                           names_to = 'step', values_to = 'count')
+
+track.long$step <- factor(track.long$step, 
+                          levels = c('raw', 'adapter_trim', 'primer_filter',
+                          'primer_trim', 'filtered', 'denoisedF','denoisedR',
+                          'merged', 'nonchim'),
+                          labels = c('Raw', 'Adapter\ntrimmed', 
+                                     'Primer\nfiltered', 'Primer\ntrimmed',
+                                     'Quality\nfiltered', 'Forward\ndenoised',
+                                     'Reverse\ndenoised', 'Merged', 
+                                     'Non-chimeric'))
+
+# Add label for faceting Undetermined reads
+track.long <- mutate(track.long,
+                     label = ifelse(sample != 'Undetermined', 1, 0),
+                     label = factor(label, labels = c('Undetermined', 'Samples')))
+```
+
+```{r}
+ggplot(track.long, aes(x = step, y = count, by = sample, group = sample)) +
+     geom_line(alpha = 0.5) +
+     facet_wrap(~label, scales = 'free_y') +
+     labs(x = 'Pipeline step', y = 'Reads', title = '') + 
+     theme_bw() +
+     theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+plotID <- paste(Sys.Date(), as.character(sample(000:999,1)), sep=".")
+
+ggsave(here(paste0(plotID, '_Read counts by pipeline step.png')), # Fill in path
+       height = 5, width = 9)
+```
+
+### PhiX spike-in
+
+Check that split of reads between undetermined and demultiplexed barcodes has rough correspondence to % PhiX alignment reported by SAV (for this run, XXX +/- XXX).
+
+Based on the plot above, I'd consider the most accurate assessment of PhiX to be the delta between the raw reads and the primer-filtered reads (which contain the 12SV5 sequences). 
+
+```{r}
+phiX <- track$raw[track$sample == 'Undetermined'] - track$primer_filter[track$sample == 'Undetermined']
+
+# % PhiX
+phiX / (sum(track$raw))
+```
+
+# DADA2 output
+
+Read in ASV tables
+
+```{r}
+seqtab.merged <- readRDS(file.path(dada2.dir, 'seqtab_nochim.rds'))
+seqtab.concats <- readRDS(file.path(dada2.dir, 'seqtab_nochim_concats.rds'))
+```
+
+```{r}
+# Check percentage of concatenated reads
+# Remember that the concatenated sequence table INCLUDES the merged read counts
+concat.tot <- sum(colSums(seqtab.concats))
+merged.tot <- sum(colSums(seqtab.merged))
+merged.tot/concat.tot
+```
+
+```{r}
+# Samples x inferred ASVs
+dim(seqtab.merged)
+dim(collapseNoMismatch(seqtab.merged))
+
+# Update with mismatches collapsed
+seqtab.merged <- collapseNoMismatch(seqtab.merged)
+```
+
+## Taxonomic assignment
+
+Using modified assignSpecies function
+```{r}
+ref <- here('..', 'food-dbs', 'data', 'processed', 'dada2-compatible', '12SV5',
+            '12SV5.fasta')
+
+taxtab.species <- assignSpecies_mod(seqtab.merged, refFasta = ref, tryRC = TRUE)
+```
+
+How many ASVs unassigned?
+```{r}
+unassigned <- taxtab.species$asv[is.na(taxtab.species$Species)]
+
+# Percentage of sequence variants
+length(unassigned)/dim(seqtab.merged)[2]
+```
+
+```{r}
+# Percentage of reads mapping to these unassigned species
+sum(seqtab.merged[, unassigned])/sum(seqtab.merged)
+```
+
+Now want to build out whole tree
+```{r}
+# Separate accession number from species name for querying, and remove unique
+# label following underscore
+taxtab.species <- 
+     taxtab.species %>%
+     separate(col = Species,
+              into = c('accession', 'label'), sep = '\\s',
+              extra = 'merge') %>% 
+     mutate(accession = gsub('_\\d+$', '', accession))
+
+taxmap <- 
+     taxtab.species %>% 
+     filter(!is.na(accession)) %>% 
+     taxa::lookup_tax_data(type = 'seq_id', 
+                           column = 'accession')
+
+taxonomy <- taxa::taxonomy_table(taxmap, 
+                                 use_ranks = c('superkingdom', 'kingdom', 
+                                               'phylum', 'order', 'family',
+                                               'genus', 'species'),
+                                 add_id_col = TRUE)
+```
+
+Join to results
+```{r}
+taxtab.species <- 
+     taxmap$data$query_data %>% 
+     select(asv, taxon_id) %>% 
+     left_join(taxonomy) %>% # Taxon ID links to taxonomy
+     right_join(select(taxtab.species, asv)) %>% # ASV links to sequencing data
+     select(-taxon_id) %>% 
+     distinct()
+```
+
+#### Last common ancestor
+```{r}
+# Group by ASV
+lca <- 
+     taxtab.species %>%
+     group_by(asv) %>%
+     summarize_all(n_distinct) %>%
+     column_to_rownames(var = 'asv')
+
+# Now, relabel all those with >1 name at a particular level as NA
+# As a placeholder, keep only the first species, knowing it will be overwritten
+taxtab.species.lca <- 
+     taxtab.species %>%
+     group_by(asv) %>%
+     summarize_all(first) %>%
+     column_to_rownames(var = 'asv')
+```
+
+Now do relabeling 
+```{r}
+# Confirm ordering is okay
+all(rownames(lca) == rownames(taxtab.species.lca))
+
+taxtab.species.lca[lca > 1] = NA
+taxtab.species.lca <- 
+     rownames_to_column(taxtab.species.lca, var = 'asv')
+```
+
+```{r}
+colSums(!is.na(taxtab.species.lca))/nrow(taxtab.species.lca)
+```
+
+Log missing sequences
+
+```{r}
+#### BLAST missing sequences
+blast <- 
+     taxtab.species %>%
+     filter(across(.cols = -asv, .fns = ~is.na(.x))) %>% 
+     pull(asv)
+
+names(blast) <- as.character(seq_along(blast))
+
+blast <- Biostrings::DNAStringSet(blast)
+Biostrings::writeXStringSet(blast,
+                            here()) # Fill in path
+```

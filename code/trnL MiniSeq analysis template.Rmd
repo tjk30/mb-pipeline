@@ -1,0 +1,762 @@
+---
+title: "trnL MiniSeq analysis template"
+output: html_document
+---
+
+Description of experiment: 
+
+Amplicon:
+Sample set:
+Positive control template: 
+Library quantitation results:
+Kit: [150/300 cycle] [Mid/High] kit
+
+# Setup
+
+```{r setup, include=FALSE, echo=FALSE}
+require("knitr")
+opts_knit$set(root.dir = file.path(getwd(), '..'))
+```
+
+```{r include=FALSE, echo=FALSE}
+library(dada2)
+library(decontam)
+library(here)
+library(MButils)
+library(phyloseq)
+library(tidyverse)
+```
+
+```{r}
+# Set paths
+data.dir <- 
+     here(
+          # Path to parent folder containing read count files and DADA2 output
+          # directory
+     )
+
+dada2.dir <- 
+     file.path(data.dir, 
+               '4_dada2')
+```
+
+# Pipeline QC
+
+```{r}
+# Get all count files for this run
+count.fs <- list.files(data.dir, pattern = '.txt', full.names = TRUE)
+
+# Read them
+count.fs <- lapply(count.fs, MButils::parse_counts)
+
+# Bind into shared dataframe
+track.pipeline <- reduce(count.fs, left_join, by = 'sample')
+names(track.pipeline) <- c('sample', 
+                           'raw', 
+                           'adapter_trim', 
+                           'primer_filter', 
+                           'primer_trim')
+
+rm(count.fs)
+```
+
+## DADA2 track variable
+```{r}
+track <- 
+     readRDS(file.path(dada2.dir, 'track.rds')) %>% 
+     data.frame() 
+
+head(track)
+```
+
+```{r}
+# Join to pipeline track, update names
+track <- left_join(track.pipeline, 
+                   track, 
+                   by = c('sample', 
+                          'primer_trim' = 'input'))
+
+rm(track.pipeline)
+```
+
+### Reads over pipeline steps
+
+```{r}
+# Reshape for plotting
+track.long <- 
+    track %>% 
+    select(-tabled) %>% # 
+    pivot_longer(cols = -sample,
+                 names_to = 'step', values_to = 'count')
+
+track.long$step <- factor(track.long$step, 
+                          levels = c('raw', 
+                                     'adapter_trim', 
+                                     'primer_filter',
+                                     'primer_trim', 
+                                     'filtered',
+                                     'denoised',
+                                     'merged',
+                                     'nonchim'),
+                          labels = c('Raw', 
+                                     'Adapter\ntrimmed', 
+                                     'Primer\nfiltered',
+                                     'Primer\ntrimmed',
+                                     'Quality\nfiltered',
+                                     'Denoised',
+                                     'Merged', 
+                                     'Non-chimeric'))
+
+# Add label for faceting Undetermined reads
+track.long <- mutate(track.long,
+                     label = ifelse(sample != 'Undetermined', 1, 0),
+                     label = factor(label, labels = c('Undetermined', 
+                                                      'Samples')))
+```
+
+```{r}
+ggplot(track.long, aes(x = step, y = count, by = sample, group = sample)) +
+     geom_line(alpha = 0.5) +
+     facet_wrap(~label, 
+                scales = 'free_y') +
+     labs(x = 'Pipeline step', 
+          y = 'Reads', 
+          title = '[DATE] MiniSeq run') +
+     theme_bw() +
+     theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## PhiX spike-in
+
+Check that split of reads between undetermined and demultiplexed barcodes has rough correspondence to % PhiX alignment reported by SAV (for this run, XX%).
+
+Based on the plot above, consider the most accurate assessment of PhiX to be the delta between the raw reads and the primer-filtered reads (which contain the trnL sequences). 
+
+```{r}
+phiX <- track$raw[track$sample == 'Undetermined'] - track$primer_filter[track$sample == 'Undetermined']
+
+# % PhiX
+phiX / (sum(track$raw))
+```
+
+# DADA2 output
+
+Read in ASV tables (both merged and concatenated if available)
+
+```{r}
+seqtab.merged <- readRDS(file.path(dada2.dir, 'seqtab_nochim.rds'))
+seqtab.concats <- readRDS(file.path(dada2.dir, 'seqtab_nochim_concats.rds'))
+```
+
+```{r}
+# Check percentage of concatenated reads
+# Remember that the concatenated sequence table INCLUDES the merged read counts
+sum(seqtab.merged)/sum(seqtab.concats)
+```
+
+```{r}
+dim(seqtab.merged)
+seqtab.merged <- collapseNoMismatch(seqtab.merged)
+dim(seqtab.merged)
+```
+
+By sample sheet, this run had XXX samples.  Did everything passed through sequencing pipeline with at least some reads? If not, will want to add samples back to the data with rows populated with 0s so we can accurately track PCR failures.
+
+```{r}
+# Add back here if necessary
+```
+
+```{r}
+# Distribution of ASV lengths
+nchar(colnames(seqtab.merged)) %>% 
+     data.frame(length = .) %>% 
+     ggplot(aes(x = length)) +
+     geom_histogram(binwidth = 10, boundary = 0) +
+     geom_vline(xintercept = c(10, 143), color = 'red', linetype = 'dashed') +
+     labs(x = 'ASV length (bp)', y = 'Count') +
+     theme_bw() +
+     scale_x_continuous(minor_breaks = seq(0, 250, 10), breaks = seq(0, 250, 50))
+```
+
+## Taxonomic assignment
+
+Using modified assignSpecies function
+```{r}
+ref <- here('..', 
+            'food-dbs', 
+            'data', 
+            'processed', 
+            'dada2-compatible',
+            'trnL', 
+            'trnLGH.fasta')
+
+taxtab.species <- assignSpecies_mod(seqtab.merged, 
+                                    refFasta = ref, 
+                                    tryRC = TRUE)
+```
+
+How many ASVs unassigned?
+```{r}
+unassigned <- taxtab.species$asv[is.na(taxtab.species$Species)]
+
+# Percentage of sequence variants
+length(unassigned)/dim(seqtab.merged)[2]
+```
+
+```{r}
+# Percentage of reads mapping to these unassigned species
+sum(seqtab.merged[, unassigned])/sum(seqtab.merged)
+```
+
+Now want to build out whole tree
+```{r}
+# Separate ID from species name for querying
+taxtab.species <- 
+     taxtab.species %>%
+     separate(col = Species,
+              into = c('index', 'label'), sep = '\\s',
+              extra = 'merge')
+
+taxmap <- metacoder::lookup_tax_data(taxtab.species, 
+                                type = 'seq_id', 
+                                column = 'index')
+
+taxonomy <- metacoder::taxonomy_table(taxmap, 
+                                 use_ranks = c('superkingdom', 
+                                               'kingdom', 
+                                               'phylum', 
+                                               'order', 
+                                               'family',
+                                               'genus', 
+                                               'species', 
+                                               'subspecies',
+                                               'varietas',
+                                               'forma'))
+```
+
+Join to results.  This varies depending on the level of the name, so do multiple joins in ascending taxonomic order:
+- By form, if present
+- By variety, if present
+- Then by subspecies, if present
+- Then by species (always present)
+
+```{r}
+# If present, remove '(nom. inval.)' notation, which interferes with joins
+taxonomy <- 
+     mutate(taxonomy,
+            across(.fns = ~gsub(pattern = ' \\(nom\\. inval\\.\\)$',
+                                replacement = '',
+                                .x)))
+```
+
+```{r}
+# Separate taxonomy table into these components
+# Form
+taxonomy.f <- filter(taxonomy, !is.na(forma))
+# Variety
+taxonomy.var <- filter(taxonomy, !is.na(varietas) & is.na(forma))
+# Subspecies
+taxonomy.ssp <- filter(taxonomy, !is.na(subspecies) & is.na(varietas) & is.na(forma))
+
+# Species
+# Had some trouble here with entries that terminate both at the species 
+# level and a subspecies level: For simplicity, just make a list of all species-level entries
+# This will ultimately be used in a right join so okay if there are 
+# some that won't be incorporated
+taxonomy.spp <- 
+     taxonomy %>% 
+     select(superkingdom:species) %>% 
+     distinct()
+```
+
+Now join each to name, accession, ASV sequence:
+
+```{r}
+# Form
+taxtab.f <- 
+     taxtab.species %>% 
+     left_join(taxonomy.f, by = c('label' = 'forma')) %>% 
+     filter(!is.na(species)) %>% 
+     select(asv, 
+            superkingdom, 
+            kingdom, 
+            phylum, 
+            order, 
+            family,
+            genus, 
+            species, 
+            subspecies, 
+            varietas,
+            forma = label)
+```
+
+```{r}
+taxtab.var <- 
+     taxtab.species %>% 
+     left_join(taxonomy.var, by = c('label' = 'varietas')) %>% 
+     filter(!is.na(species)) %>% 
+     select(asv, 
+            superkingdom, 
+            kingdom, 
+            phylum, 
+            order, 
+            family,
+            genus, 
+            species, 
+            subspecies, 
+            varietas = label,
+            forma)
+```
+
+```{r}
+taxtab.ssp <- 
+     taxtab.species %>% 
+     left_join(taxonomy.ssp, by = c('label' = 'subspecies')) %>% 
+     filter(!is.na(species)) %>% 
+     select(asv, 
+            superkingdom, 
+            kingdom, 
+            phylum, 
+            order, 
+            family,
+            genus, 
+            species, 
+            subspecies = label, 
+            varietas,
+            forma)
+```
+
+```{r}
+# Missing columns will be filled with NA
+taxtab.spp <- 
+     taxtab.species %>% 
+     filter(!(asv %in% c(taxtab.f$asv,
+                         taxtab.var$asv,
+                         taxtab.ssp$asv))) %>% 
+     left_join(taxonomy.spp, by = c('label' = 'species')) %>%
+     select(asv, 
+            superkingdom, 
+            kingdom, 
+            phylum, 
+            order, 
+            family,
+            genus,
+            species = label) %>% 
+     mutate(subspecies = NA,
+            varietas = NA,
+            forma = NA) %>% 
+     distinct()
+```
+
+```{r}
+# Join all together
+taxtab <- 
+     bind_rows(taxtab.spp, 
+               taxtab.ssp,
+               taxtab.var,
+               taxtab.f)
+```
+
+```{r}
+any(!(taxtab.species$asv %in% taxtab$asv))
+```
+
+The dimensions are a bit different, but think this is because of excluding accession number?
+
+```{r}
+dim(taxtab.species)
+dim(taxtab)
+```
+
+#### Last common ancestor
+```{r}
+# Group by ASV
+lca <- 
+     taxtab %>%
+     group_by(asv) %>%
+     summarize_all(n_distinct, 
+                   na.rm = TRUE) %>%
+     column_to_rownames(var = 'asv')
+
+# Now, relabel all those with >1 name at a particular level as NA
+# As a placeholder, keep only the first species, knowing it will be overwritten
+taxtab.lca <- 
+     taxtab %>%
+     group_by(asv) %>%
+     summarize_all(first) %>%
+     column_to_rownames(var = 'asv')
+```
+
+Now do relabeling 
+```{r}
+# Confirm ordering is okay
+all(rownames(lca) == rownames(taxtab.lca))
+
+taxtab.lca[lca > 1] = NA
+taxtab.lca <- 
+     rownames_to_column(taxtab.lca, var = 'asv')
+```
+
+```{r}
+colSums(!is.na(taxtab.lca))/nrow(taxtab.lca)
+```
+
+```{r}
+blast <- 
+     taxtab %>%
+     filter(is.na(superkingdom)) %>%
+     pull(asv)
+
+names(blast) <- as.character(seq_along(blast))
+
+blast <- Biostrings::DNAStringSet(blast)
+
+# Biostrings::writeXStringSet(blast,
+#                             here('data',
+#                                  'processed',
+#                                  'miniseq',
+#                                  '20211222',
+#                                  '20220505_no_tax_assignment.fasta'))
+```
+
+# Make phyloseq object
+
+## Sample data
+
+```{r}
+# Read in
+samdf <- 
+     here(
+          # Path to sample data
+     ) %>% 
+     read_csv()
+```
+
+```{r}
+# Factor levels for plotting
+samdf$type <- factor(samdf$type,
+                     levels = c('sample', 
+                                'positive control',
+                                'negative control'))
+```
+
+```{r}
+samdf <- column_to_rownames(samdf, 
+                            var = 'well') 
+
+# Add a row for the Undetermined sample
+samdf['Undetermined', ] <- NA
+```
+
+## Taxonomy table
+
+```{r}
+# Convert taxonomy table to matrix format
+taxdf <- 
+     taxtab.lca %>%
+     column_to_rownames(var = 'asv') %>%
+     as.matrix()
+```
+
+## Assemble
+
+```{r}
+ps <- phyloseq(otu_table(seqtab.merged, taxa_are_rows=FALSE),
+               sample_data(samdf), 
+               tax_table(taxdf))
+```
+
+```{r}
+# Save
+saveRDS(ps,
+        here(
+             # Path to saved object
+        ))
+```
+
+# Run analysis
+
+```{r}
+# Read in last saved version of phyloseq
+ps <-
+     here(
+          # Path to saved object
+     ) %>% 
+     readRDS()
+
+ps
+```
+
+```{r}
+# Remove Undetermined reads, which otherwise interfere with plotting
+ps <- 
+        ps %>% 
+        subset_samples(!is.na(type)) %>% 
+        prune_taxa(taxa_sums(.) > 0, .)
+ps
+```
+
+## QC
+
+### Read counts
+
+```{r}
+# Add total read count to sample data
+sample_data(ps)$reads <- sample_sums(ps)
+
+# Pull
+samdf <- 
+     sample_data(ps) %>% 
+     as('data.frame') %>% 
+     rownames_to_column(var = 'row')
+```
+
+```{r}
+# Histogram
+ggplot(samdf, aes(x = reads, 
+                  fill = type, 
+                  group = type)) +
+     geom_histogram(binwidth = 10000, boundary = 0, 
+                    color = 'black') +
+     scale_fill_manual(values = c('gray80', '#1A9850', '#D73027')) +
+     labs(x = 'Read count', 
+          y = 'Count',
+          fill = 'Sample type',
+          title = '[DATE] MiniSeq run') +
+     theme_bw() 
+```
+
+### Controls
+
+```{r}
+ps.controls <-
+     ps %>% 
+     subset_samples(type %in% c('positive control', 
+                                'negative control')) %>% 
+     prune_taxa(taxa_sums(.) > 0, .)
+
+ps.controls
+```
+
+```{r}
+taxtab.controls <- tax_table(ps.controls)@.Data
+data.frame(taxtab.controls)
+```
+
+```{r}
+# Label as such in data for plotting
+taxtab.controls <- 
+     cbind(taxtab.controls,
+           label = c(
+                # Add manual labels for ASVs here
+           ))
+
+# Replace in object
+tax_table(ps.controls) <- taxtab.controls
+```
+
+```{r}
+ps.controls %>% 
+     psmelt() %>% 
+     ggplot(aes(x = Sample, y = Abundance, fill = label)) +
+     geom_bar(stat = "identity", position = "stack") + 
+     facet_wrap(~type, scales = 'free') +
+     labs(x = 'Control', y = 'Number of reads', fill = 'ASV identity',
+     title = '[DATE] MiniSeq run') +
+     theme_bw()
+```
+
+#### Decontam
+
+```{r}
+# Remove samples with 0 reads  (need this for subsequent plotting)
+ps.nonzero <- subset_samples(ps, reads > 0)
+ps.nonzero
+```
+
+```{r}
+samdf <- arrange(samdf, reads)
+samdf$index <- seq(nrow(samdf))
+
+ggplot(samdf, aes(x = index, y = reads, color = type)) + 
+     geom_point(alpha = 0.6) +
+     theme_bw()
+```
+
+Note: need to add batch here.
+```{r}
+# Flag negative controls
+sample_data(ps.nonzero)$is_neg <- 
+     sample_data(ps.nonzero)$type == 'negative control'
+
+# Identify contaminants
+contamdf <- isContaminant(ps.nonzero, 
+                          conc = 'qubit', 
+                          neg = 'is_neg',
+                          batch = 'pcr_batch',
+                          method = 'combined')
+```
+
+```{r}
+table(contamdf$contaminant)
+```
+
+```{r}
+head(which(contamdf$contaminant))
+```
+
+```{r}
+contam.asvs <- 
+     filter(contamdf, contaminant == TRUE) %>% 
+     row.names()
+
+taxtab <- ps.nonzero@tax_table@.Data
+taxtab[contam.asvs, ]
+```
+
+```{r}
+plot_frequency(ps.nonzero, 
+               taxa_names(ps.nonzero)[c(
+                    # Indexes of contaminants
+               )],
+               conc = 'qubit') +
+     xlab('DNA concentration (PicoGreen fluorescent intensity')
+```
+
+```{r}
+# Drop Illumina adapters
+ps <- 
+     prune_taxa(!(taxa_names(ps) == '[Sequences of detected Illumina adapters]'), ps)
+ps
+```
+
+```{r}
+# Can now completely drop controls from object
+ps <- 
+     subset_samples(ps, type == 'sample') %>% 
+     prune_taxa(taxa_sums(.) > 0, .)
+ps
+```
+
+## Read depth 
+
+### vs. # taxa
+
+```{r}
+asvtab <- ps@otu_table@.Data
+taxtab <- ps@tax_table@.Data
+     
+taxa.counts <- data.frame(sample = row.names(asvtab))
+taxa.counts$reads <- rowSums(asvtab)
+taxa.counts$ntaxa <- rowSums(asvtab > 0)
+
+# Note how many ASVs identified to food
+identified <- row.names(taxtab)[!is.na(taxtab[, 'superkingdom'])]
+taxa.counts$ntaxa_food <- rowSums(asvtab[, identified] > 0)
+
+taxa.counts.long <- 
+     pivot_longer(taxa.counts, cols = c(ntaxa, ntaxa_food),
+                  names_to = 'ASV_type', values_to = 'n') %>% 
+     # Recode variable
+     mutate(ASV_type = ifelse(ASV_type == 'ntaxa',
+                              yes = 'all', no = 'food only'))
+```
+
+```{r}
+ggplot(taxa.counts.long, aes(x = reads, y = n)) +
+     geom_point(alpha = 0.8) +
+     facet_wrap(~ASV_type) +
+     labs(x = 'Read count', 
+          y = 'Number of taxa', 
+          title = '[DATE] MiniSeq run') +
+     theme_bw()
+```
+
+```{r}
+# Test
+summary(lm(ntaxa_food ~ reads, taxa.counts))
+```
+
+## Duplicated taxa
+
+```{r}
+# Merge taxa with shared names
+# Going this route because distinct NAs can be preserved
+taxtab <- 
+     data.frame(ps@tax_table) %>% 
+     rownames_to_column(var = 'asv')
+```
+
+```{r}
+# Form
+taxtab$forma[duplicated(taxtab$forma, incomparables = NA)]
+```
+
+```{r}
+# Variety
+taxtab$varietas[duplicated(taxtab$varietas, incomparables = NA)]
+```
+
+```{r}
+# Subspecies
+taxtab$subspecies[duplicated(taxtab$subspecies, incomparables = NA)]
+```
+
+```{r}
+# Need to rework this code to handle cases when things are distinct
+# at a taxonomic level lower than species
+
+# Species
+taxtab %>% 
+     filter(if_all(subspecies:forma, is.na)) %>% 
+     filter(duplicated(species, incomparables = NA))
+
+taxtab$species[duplicated(taxtab$species, incomparables = NA)]
+
+# TODO: Follow up on Brassica SVs-- are they distinct sets of taxa?
+# One maps to many taxa, and the other two are separate
+# Likely need to follow up, but merge for now
+taxtab %>% 
+     filter(species == 'Brassica oleracea')
+
+brassica <- 
+     taxtab %>% 
+     filter(species == 'Brassica oleracea') %>% 
+     pull(asv)
+
+corylus <- 
+     taxtab %>% 
+     filter(species == 'Corylus avellana') %>% 
+     pull(asv)
+
+oryza <- 
+     taxtab %>% 
+     filter(species == 'Oryza sativa') %>% 
+     pull(asv)
+
+# Merge
+ps <- 
+     ps %>% 
+     merge_taxa(brassica) %>% 
+     merge_taxa(corylus) %>% 
+     merge_taxa(oryza) 
+
+ps
+```
+
+### Save
+
+For passing to other notebooks.  Details on steps above
+* Controls and Undetermined reads removed
+* Illumina adapter removed
+* Contaminant detected (onion), looks suspicious, but not removed
+* Reads with 0 counts retained
+* Duplicated taxa merged
+* Did not try read count threshold
+
+```{r}
+saveRDS(ps,
+        here(
+             # Path to filtered phyloseq object
+        ))
+```
