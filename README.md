@@ -2,10 +2,12 @@
 
 ## Wet lab protocols
 
-1. [DNA extraction](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/1_dna_extraction.md)
-2. [Primary PCR](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/2_primary_pcr.md)
-3. [Dilution](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/3_dilution.md)
-4. [Indexing PCR](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/4_indexing_pcr.md)
+1. [DNA extraction](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/1_dna_extraction.md) 
+2. Primary PCR. One of:  
+ 2A. [trnL (plant)](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/2A_primary_pcr_trnL.md)  
+ 2B. [12SV5 (vertebrate animals)](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/2B_primary_pcr_12SV5.md) 
+4. [Dilution](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/3_dilution.md) 
+5. [Indexing PCR](https://github.com/bpetrone/mb-pipeline/blob/master/protocols/4_indexing_pcr.md) 
 
 ## Computational pipeline
 
