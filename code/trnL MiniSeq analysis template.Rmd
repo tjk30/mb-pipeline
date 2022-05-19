@@ -24,6 +24,7 @@ library(decontam)
 library(here)
 library(MButils)
 library(phyloseq)
+library(scales) # For comma in plot labels
 library(tidyverse)
 ```
 
@@ -516,14 +517,15 @@ samdf <-
 ggplot(samdf, aes(x = reads, 
                   fill = type, 
                   group = type)) +
-     geom_histogram(binwidth = 10000, boundary = 0, 
-                    color = 'black') +
-     scale_fill_manual(values = c('gray80', '#1A9850', '#D73027')) +
+     geom_histogram(binwidth = 10000, boundary = 0) +
+     scale_fill_manual(values = c('#b3b7b8', '#59a14f', '#e15759')) +
+     scale_x_continuous(label = comma) +
      labs(x = 'Read count', 
           y = 'Count',
           fill = 'Sample type',
           title = '[DATE] MiniSeq run') +
-     theme_bw() 
+     theme_bw() +
+     theme(legend.title = element_blank())
 ```
 
 ### Controls
