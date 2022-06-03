@@ -521,7 +521,7 @@ ggplot(samdf, aes(x = reads,
      scale_fill_manual(values = c('#b3b7b8', '#59a14f', '#e15759')) +
      scale_x_continuous(label = comma) +
      labs(x = 'Read count', 
-          y = 'Count',
+          y = 'Samples (n)',
           fill = 'Sample type',
           title = '[DATE] MiniSeq run') +
      theme_bw() +
@@ -679,82 +679,15 @@ ggplot(taxa.counts.long, aes(x = reads, y = n)) +
 summary(lm(ntaxa_food ~ reads, taxa.counts))
 ```
 
-## Duplicated taxa
-
-```{r}
-# Merge taxa with shared names
-# Going this route because distinct NAs can be preserved
-taxtab <- 
-     data.frame(ps@tax_table) %>% 
-     rownames_to_column(var = 'asv')
-```
-
-```{r}
-# Form
-taxtab$forma[duplicated(taxtab$forma, incomparables = NA)]
-```
-
-```{r}
-# Variety
-taxtab$varietas[duplicated(taxtab$varietas, incomparables = NA)]
-```
-
-```{r}
-# Subspecies
-taxtab$subspecies[duplicated(taxtab$subspecies, incomparables = NA)]
-```
-
-```{r}
-# Need to rework this code to handle cases when things are distinct
-# at a taxonomic level lower than species
-
-# Species
-taxtab %>% 
-     filter(if_all(subspecies:forma, is.na)) %>% 
-     filter(duplicated(species, incomparables = NA))
-
-taxtab$species[duplicated(taxtab$species, incomparables = NA)]
-
-# TODO: Follow up on Brassica SVs-- are they distinct sets of taxa?
-# One maps to many taxa, and the other two are separate
-# Likely need to follow up, but merge for now
-taxtab %>% 
-     filter(species == 'Brassica oleracea')
-
-brassica <- 
-     taxtab %>% 
-     filter(species == 'Brassica oleracea') %>% 
-     pull(asv)
-
-corylus <- 
-     taxtab %>% 
-     filter(species == 'Corylus avellana') %>% 
-     pull(asv)
-
-oryza <- 
-     taxtab %>% 
-     filter(species == 'Oryza sativa') %>% 
-     pull(asv)
-
-# Merge
-ps <- 
-     ps %>% 
-     merge_taxa(brassica) %>% 
-     merge_taxa(corylus) %>% 
-     merge_taxa(oryza) 
-
-ps
-```
-
 ### Save
 
 For passing to other notebooks.  Details on steps above
 * Controls and Undetermined reads removed
 * Illumina adapter removed
-* Contaminant detected (onion), looks suspicious, but not removed
+* Contaminant(s) detected? Removed/not removed?
 * Reads with 0 counts retained
-* Duplicated taxa merged
-* Did not try read count threshold
+* Duplicated taxa (*i.e.*, ASVs assigned to same food taxon) not handled here, should be merged only after combining all phyloseq objects to be analyzed and synchronizing taxonomic assignment
+* Read count threshold by PERMANOVA: [#] reads
 
 ```{r}
 saveRDS(ps,
