@@ -1,15 +1,15 @@
 #!/bin/bash
 #SBATCH --job-name=3_filter-primers
+#SBATCH --partition scavenger
 #SBATCH --mem=20000
 #SBATCH --out=reports/3_filter-primers-%j.out
 #SBATCH --error=reports/3_filter-primers-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
-#SBATCH --mail-user=blp23@duke.edu
 
 # Load cutadapt in conda environment
-source /data/davidlab/packages/miniconda3/etc/profile.d/conda.sh
-conda activate base
+module load Anaconda3/5.1.0
+source activate /hpc/group/ldavidlab/modules/cutadapt-env
 
 cd $1
 mkdir 2_filter
