@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=1_demux-barcode
+#SBATCH --partition scavenger
 #SBATCH --mem=20000
 #SBATCH --out=reports/1_demux-barcode-%j.out
 #SBATCH --error=reports/1_demux-barcode-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
-#SBATCH --mail-user=blp23@duke.edu
 
 # Usage: demux-barcode.sh /miniseq-dir samplesheetname
 # This assumes that the sample sheet is located in the parent directory containing the MiniSeq results
