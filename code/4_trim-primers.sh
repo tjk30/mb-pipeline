@@ -2,8 +2,8 @@
 #SBATCH --job-name=4_trim-primers
 #SBATCH --partition scavenger
 #SBATCH --mem=20000
-#SBATCH --out=reports/4_trim-primers-%j.out
-#SBATCH --error=reports/4_trim-primers-%j.err
+#SBATCH --out=4_trim-primers-%j.out
+#SBATCH --error=4_trim-primers-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 

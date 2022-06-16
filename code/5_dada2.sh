@@ -3,8 +3,8 @@
 #SBATCH --partition scavenger
 #SBATCH --mem=64000
 #SBATCH -n 2  # Number of cores
-#SBATCH --out=reports/5_dada2-%j.out
-#SBATCH --error=reports/5_dada2-%j.err
+#SBATCH --out=5_dada2-%j.out
+#SBATCH --error=5_dada2-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 

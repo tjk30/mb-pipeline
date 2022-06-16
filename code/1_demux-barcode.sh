@@ -2,8 +2,8 @@
 #SBATCH --job-name=1_demux-barcode
 #SBATCH --partition scavenger
 #SBATCH --mem=20000
-#SBATCH --out=reports/1_demux-barcode-%j.out
-#SBATCH --error=reports/1_demux-barcode-%j.err
+#SBATCH --out=1_demux-barcode-%j.out
+#SBATCH --error=1_demux-barcode-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 

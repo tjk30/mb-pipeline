@@ -2,8 +2,8 @@
 #SBATCH --job-name=2_trim-adapter
 #SBATCH --partition scavenger
 #SBATCH --mem=20000
-#SBATCH --out=reports/2_trim-adapter-%j.out
-#SBATCH --error=reports/2_trim-adapter-%j.err
+#SBATCH --out=2_trim-adapter-%j.out
+#SBATCH --error=2_trim-adapter-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 

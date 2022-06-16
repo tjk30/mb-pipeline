@@ -2,8 +2,8 @@
 #SBATCH --job-name=3_filter-primers
 #SBATCH --partition scavenger
 #SBATCH --mem=20000
-#SBATCH --out=reports/3_filter-primers-%j.out
-#SBATCH --error=reports/3_filter-primers-%j.err
+#SBATCH --out=3_filter-primers-%j.out
+#SBATCH --error=3_filter-primers-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
