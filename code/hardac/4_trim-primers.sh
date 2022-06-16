@@ -1,18 +1,18 @@
 #!/bin/bash
 #SBATCH --job-name=4_trim-primers
+#SBATCH --partition scavenger
 #SBATCH --mem=20000
 #SBATCH --out=reports/4_trim-primers-%j.out
 #SBATCH --error=reports/4_trim-primers-%j.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
-#SBATCH --mail-user=blp23@duke.edu
 
 # Usage: trim-primers.sh /marker-dir 
 # where marker-dir is the directory containing reads that all share the same 
 # primer set 
 
-source /data/davidlab/packages/miniconda3/etc/profile.d/conda.sh
-conda activate base
+module load Anaconda3/5.1.0
+source activate /hpc/group/ldavidlab/modules/cutadapt-env
 
 # Go to amplicon directory
 cd $1
