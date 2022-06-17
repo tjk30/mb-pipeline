@@ -47,10 +47,10 @@ raw.fs <-
      list.files(full.names = TRUE)
 
 p <- plotQualityProfile(raw.fs[1]) # R1
-ggsave(file.path(outdir, "quality_F_summary.png"), plot = p)
+ggsave(file.path(outdir, "quality_F_summary.pdf"), plot = p)
 
 p <- plotQualityProfile(raw.fs[2]) # R2
-ggsave(file.path(outdir, "quality_R_summary.png"), plot = p)
+ggsave(file.path(outdir, "quality_R_summary.pdf"), plot = p)
 
 
 # Filter ------------------------------------------------------------------
@@ -106,9 +106,9 @@ errR <- learnErrors(fnRs_filtN, multithread = TRUE, verbose=1)
 
 # Visualize estimated error rates
 p <- plotErrors(errF, nominalQ = TRUE)
-ggsave("dada_errors_F.png", plot = p)
+ggsave("dada_errors_F.pdf", plot = p)
 p <- plotErrors(errR, nominalQ = TRUE)
-ggsave("dada_errors_R.png", plot = p)
+ggsave("dada_errors_R.pdf", plot = p)
 
 # Dereplicate identical reads
 derepFs <- derepFastq(fnFs_filtN, verbose = TRUE)
