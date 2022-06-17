@@ -20,5 +20,5 @@ source activate /hpc/group/ldavidlab/modules/qiime2-env
 # mkdir $1/$3 
 
 # Run dada2
-cd ~/scripts
+cd /hpc/group/ldavidlab/scripts/mb-pipeline/code
 Rscript 5_Rscript-echo.R 5_dada2.R $1 $2 $3 
