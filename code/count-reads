@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Determine if analyzing one read or two
+# Is R1 missing? 
+if ! ls 1_trimadapter/*_R1_* 1> /dev/null 2>&1; then
+	for fastq in *_R2*.fastq.gz; do
+		echo ${fastq##*/}
+		zcat < $fastq | echo $((`wc -l`/4))
+	done
+
+# Is R2 missing?
+elif ! ls 1_trimadapter/*_R2_* 1> /dev/null 2>&1; then
+	for fastq in *_R1*.fastq.gz; do
+		echo ${fastq##*/}
+		zcat < $fastq | echo $((`wc -l`/4))
+	done
+# Data is paired-end, and files have same read counts. Analyze R1
+else
+	for fastq in *_R1*.fastq.gz; do
+		echo ${fastq##*/}
+		zcat < $fastq | echo $((`wc -l`/4))
+	done
+fi
