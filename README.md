@@ -29,5 +29,6 @@ DATE_results
 ### Requirements
 
 * A compute cluster with SLURM job submission
-* A base [miniconda environment](https://docs.conda.io/en/latest/miniconda.html) with the following packages available: [bcl2fastq](https://anaconda.org/dranew/bcl2fastq), [cutadapt](https://cutadapt.readthedocs.io/en/stable/installation.html#installation-with-conda)
-* An R installation with the following packages available: ```dada2```, ```dplyr```, ```ggplot2```, ```magrittr```, and ```tibble```
+* Have downloaded the metabarcoding Singularity container: https://gitlab.oit.duke.edu/lad-lab/metabarcoding/-/tree/main 
+
+## Computational protocols
