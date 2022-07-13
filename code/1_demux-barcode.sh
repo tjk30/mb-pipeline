@@ -11,7 +11,7 @@
 # This assumes that the sample sheet is located in the parent directory containing the MiniSeq results
 # folder
 
-source /davidlab/packages/miniconda3/etc/profile.d/conda.sh
+source /data/davidlab/packages/miniconda3/etc/profile.d/conda.sh
 conda activate base
 
 cd $1
