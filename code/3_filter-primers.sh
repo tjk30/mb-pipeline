@@ -7,11 +7,9 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
-# Load cutadapt in conda environment
-module load Anaconda3/5.1.0
-source activate /hpc/group/ldavidlab/modules/cutadapt-env
+# Usage: sbatch --mail-user=youremail@duke.edu 3_filter-primers.sh /path/to/metabarcoding.sif path/to/XXXXXXXX_results
 
-cd $1
+cd $2
 mkdir 2_filter
 
 # Read in primer sequences from file (on separate lines in order: forward, reverse)
@@ -27,7 +25,7 @@ if ! ls 1_trimadapter/*_R1_* 1> /dev/null 2>&1; then
 
 		# Do single-end filtering:
 		# R2 must have the correct amplicon primer anchored at 5' end
-		cutadapt \
+		singularity exec --bind $2 $1 cutadapt \
 		--overlap 5 -e 0.15 \
 		--action=none --discard-untrimmed \
 		-g $rev -o 2_filter/${name}_R2.fastq.gz $read2 \
@@ -42,7 +40,7 @@ elif ! ls 1_trimadapter/*_R2_* 1> /dev/null 2>&1; then
 
 		# Do single-end filtering:
 		# R1 must have the correct amplicon primer anchored at 5' end
-		cutadapt \
+		singularity exec --bind $2 $1 cutadapt \
 		--overlap 5 -e 0.15 \
 		--action=none --discard-untrimmed \
 		-g $fwd -o 2_filter/${name}_R1.fastq.gz $read1 \
@@ -61,7 +59,7 @@ else
 
 		# Do paired-end filtering: Both R1 and R2 must have the correct amplicon primer 
 		# anchored at 5' end
-		cutadapt \
+		singularity exec --bind $2 $1 cutadapt \
 		--overlap 5 -e 0.15 \
 		--action=none --discard-untrimmed --pair-filter=any \
 		-g $fwd \
@@ -71,5 +69,3 @@ else
 		> 2_filter/$name.out
 	done
 fi
-
-conda deactivate # Close conda environment

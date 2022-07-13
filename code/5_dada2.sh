@@ -8,17 +8,13 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
-# Usage: 5_dada2.sh /marker-dir input output,  
+# Usage: 5_dada2.sh /marker-dir input output /container-dir
 # where marker-dir is the directory containing reads that all share the same 
 # primer set (can group together as dada2 infers variants) 
-
-module load Anaconda3/5.1.0
-module load R/4.1.1-rhel8
-source activate /hpc/group/ldavidlab/modules/qiime2-env
+# Example: sbatch --mail-user=youremail@duke.edu 5_dada2.sh /path/to/XXXXXXXX_results 3_trimprimer 4_dada2output /path/to/metabarcoding.sif
 
 ## Make output folders (can't figure out how to do this in R script)
-# mkdir $1/$3 
+mkdir $1/$3 
 
 # Run dada2
-cd /hpc/group/ldavidlab/scripts/mb-pipeline/code
-Rscript 5_Rscript-echo.R 5_dada2.R $1 $2 $3 
+singularity exec --bind $1,$PWD $4 Rscript 5_Rscript-echo.R 5_dada2.R $1 $2 $3
