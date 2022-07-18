@@ -38,9 +38,9 @@ DATE_results
 3. [Filter primers](https://github.com/bpetrone/mb-pipeline/blob/master/code/3_filter-primers.sh)
 4. [Trim primers](https://github.com/bpetrone/mb-pipeline/blob/master/code/4_trim-primers.sh)
 5. Data analysis object generation and QC 
-    5A. [Submission script](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.sh) 
-    5B. [Rscript](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.R) 
-    5C. [Write Rout file](https://github.com/bpetrone/mb-pipeline/blob/master/code/Rscript-echo.R) 
+ 5A. [Submission script](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.sh) 
+ 5B. [Rscript](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.R) 
+ 5C. [Write Rout file](https://github.com/bpetrone/mb-pipeline/blob/master/code/Rscript-echo.R) 
     
 ## Setup
 
@@ -115,3 +115,43 @@ If demultiplexing failed, here are the most common issues:
 sbatch --mail-user=youremail@duke.edu /PATH/TO/1_demux-barcode.sh /path/to/metabarcoding.sif path/to/miniseq-dir XXXXXXXX_sample-sheet.csv <trnL>OR<12SV5>
 ```
 
+## Step 2: Trim adapters
+<add explanation of what this does and why>
+- Input files: Demultiplexed and .fastq files
+- Output files
+-- Trimmed .fastq files
+
+## Step 3: Filter primers
+<add explanation of what this does and why>
+
+- Input files: Demultiplexed and trimmed .fastq files
+- Output files
+-- Filtered .fastq files
+-- .out file for each sample
+
+
+## Step 4: dada2
+
+Some final quality control filtering and QC plot generation is done at this step. <add more explanation>
+
+### Input files
+3_trimprimer directory containing appropriately trimmed/filtered read files
+
+### Output files:
+- quality_F.pdf
+- quality_R.pdf
+- quality_F_summary.png
+- quality_R_summary.png
+- dada_errors_F.png
+- dada_errors_R.png
+- dadaFs.rds
+- dadaRs.rds
+- mergers.rds: merged forward and reverse reads
+- concats.rds: includes concatenated reads
+- seqtab.rds
+- seqtab_concats.rds
+- seqtab_nochim.rds: chimeras removed
+- track.rds: counts up how many reads were lost at each dada2 step due to filtering
+- seqtab_nochim_concats.rds
+- track_pipeline.csv: table of how many reads were present at each of the preceding pipeline steps
+- track_long.csv: R data table formatted table with the number of reads for each sample at each pipeline step, including dada2. Allows QC plotting 
