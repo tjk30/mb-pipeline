@@ -41,7 +41,7 @@ DATE_results
     5A. [Submission script](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.sh) 
     5B. [Rscript](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.R) 
     5C. [Write Rout file](https://github.com/bpetrone/mb-pipeline/blob/master/code/Rscript-echo.R) 
-  
+    
 ## Setup
 
 Clone this repo to the computing cluster:
