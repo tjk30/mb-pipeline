@@ -37,10 +37,10 @@ DATE_results
 2. [Trim adapters](https://github.com/bpetrone/mb-pipeline/blob/master/code/2_trim-adapters.sh)
 3. [Filter primers](https://github.com/bpetrone/mb-pipeline/blob/master/code/3_filter-primers.sh)
 4. [Trim primers](https://github.com/bpetrone/mb-pipeline/blob/master/code/4_trim-primers.sh)
-5. Data analysis object generation and QC \n
-  5A. [Submission script](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.sh) \n
-  5B. [Rscript](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.R) \n
-  5C. [Write Rout file](https://github.com/bpetrone/mb-pipeline/blob/master/code/Rscript-echo.R) \n
+5. Data analysis object generation and QC 
+    5A. [Submission script](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.sh) 
+    5B. [Rscript](https://github.com/bpetrone/mb-pipeline/blob/master/code/5_dada2.R) 
+    5C. [Write Rout file](https://github.com/bpetrone/mb-pipeline/blob/master/code/Rscript-echo.R) 
   
 ## Setup
 
