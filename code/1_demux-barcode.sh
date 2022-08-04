@@ -15,7 +15,6 @@ cd $2
 cd ..
 parent=$PWD
 cd $2
->>>>>>> f6f551a73b1b737d7b4e7dae97bbde8ce75278f4
 now=$(date +'%Y%m%d')
 outdir=$now'_results'
 mkdir $outdir
