@@ -1,3 +1,4 @@
+
 # Applying dada2  pipeline to diet metabarcoding sequencing results
 
 args <- commandArgs(trailingOnly=TRUE)
@@ -18,11 +19,14 @@ library(tibble, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('tibbl
 
 # Set directory for starting files: 
 path <- file.path(parent, indir)
-
+print(paste("Looking in ", path, " for read files"))
 # Generate matched lists of forward and reverse filenames
 fnFs <- sort(list.files(path, pattern = "R1.fastq.gz", full.names = TRUE))
 fnRs <- sort(list.files(path, pattern = "R2.fastq.gz", full.names = TRUE))
-
+if length(fnFs<1) stop("found no forward read files")
+if length(fnFs<1) stop("found no reverse read files")
+print(paste("Found", length(fnFs), "forward read files"))
+print(paste("Found", length(fnRs), "reverse read files"))
 # Inspect read quality profiles -------------------------------------------
 
 # Each sample individually
@@ -47,10 +51,10 @@ raw.fs <-
      list.files(full.names = TRUE)
 
 p <- plotQualityProfile(raw.fs[1]) # R1
-ggsave(file.path(outdir, "quality_F_summary.pdf"), plot = p)
+ggsave(file.path(outdir, "quality_F_summary.png"), plot = p)
 
 p <- plotQualityProfile(raw.fs[2]) # R2
-ggsave(file.path(outdir, "quality_R_summary.pdf"), plot = p)
+ggsave(file.path(outdir, "quality_R_summary.png"), plot = p)
 
 
 # Filter ------------------------------------------------------------------
@@ -106,9 +110,9 @@ errR <- learnErrors(fnRs_filtN, multithread = TRUE, verbose=1)
 
 # Visualize estimated error rates
 p <- plotErrors(errF, nominalQ = TRUE)
-ggsave("dada_errors_F.pdf", plot = p)
+ggsave("dada_errors_F.png", plot = p)
 p <- plotErrors(errR, nominalQ = TRUE)
-ggsave("dada_errors_R.pdf", plot = p)
+ggsave("dada_errors_R.png", plot = p)
 
 # Dereplicate identical reads
 derepFs <- derepFastq(fnFs_filtN, verbose = TRUE)
@@ -209,3 +213,45 @@ if (exists('concats')){
      sum(seqtab_nochim_concats)/sum(seqtab_concats)
      saveRDS(seqtab_nochim_concats, "seqtab_nochim_concats.rds")
 }
+
+# Count up reads at each step
+library(ShortRead)
+parent<-args[1]
+dirs<-c("0_raw_demux", "1_trimadapter","2_filter","3_trimprimer")
+for (dir in seq_along(dirs)) { #this loops through each output folder and counts up how many reads are in each sample file
+    folder<-file.path(parent,dirs[dir])
+    fq<-countFastq(folder, pattern=".fastq.gz")
+    colnames(fq)[1]<-dirs[dir]
+    d<-fq[1]
+    ifelse(dir==1,track.pipeline<-d,track.pipeline<-cbind(track.pipeline,d)) 
+}
+colnames(track.pipeline)<-c('raw', 
+                           'adapter_trim', 
+                           'primer_filter', 
+                           'primer_trim')
+sample<-gsub("_S.*$","",row.names(track.pipeline))
+track.pipeline<-cbind(sample,track.pipeline)
+row.names(track.pipeline)<-NULL
+track.pipeline<-distinct(track.pipeline)
+track.pipeline
+write.csv(track.pipeline, file.path(parent,args[3],"track_pipeline.csv"), row.names=FALSE) #write csv with reads at preceding steps
+
+track <- left_join(track.pipeline, track, by = c('sample', 
+                                                 'primer_trim' = 'input'))
+track.long <- pivot_longer(track, 
+                           cols = -sample,
+                           names_to = 'step', values_to = 'count')
+track.long$step <- factor(track.long$step, 
+                          levels = c('raw', 'adapter_trim', 'primer_filter',
+                          'primer_trim', 'filtered', 'denoisedF','denoisedR',
+                          'merged', 'nonchim'),
+                          labels = c('Raw', 'Adapter\ntrimmed', 
+                                     'Primer\nfiltered', 'Primer\ntrimmed',
+                                     'Quality\nfiltered', 'Forward\ndenoised',
+                                     'Reverse\ndenoised', 'Merged', 
+                                     'Non-chimeric'))
+# Add label for faceting Undetermined reads
+track.long <- mutate(track.long,
+                     label = ifelse(sample != 'Undetermined', 1, 0),
+                     label = factor(label, labels = c('Undetermined', 'Samples')))
+write.csv(track.long, file.path(parent,args[3],"track_long.csv"), row.names=FALSE) #write csv with reads at ALL steps ready to be plotted for QC

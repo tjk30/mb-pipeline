@@ -7,25 +7,27 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
-# Usage: trim-adapter.sh /marker-dir
+
+# Usage: 2_trim-adapter.sh /container-dir /marker-dir
+  # Example: sbatch --mail-user=youremail@duke.edu 2_trim-adapter.sh /path/to/metabarcoding.sif path/to/XXXXXXXX_results 
 # where marker-dir is the directory containing reads that all share the same
 # primer set
 # This trims off read-through into Illumina adapter at the 3' side of the read,
 # which can occur if the amplicon size is <150 bp.
-
-module load BBMap/38.63
-mkdir $1/1_trimadapter
-cd $1/0_raw_demux
+cd $2
+cd ..
+wd=$PWD
+mkdir $2/1_trimadapter
+cd $2/0_raw_demux
 
 for read1 in *R1_001.fastq.gz; do
-	# Find its matched read 2
-	read2=${read1%R1_001.fastq.gz}R2_001.fastq.gz
+    # Find its matched read 2
+    read2=${read1%R1_001.fastq.gz}R2_001.fastq.gz
 
-	# Perform adapter trimming with BBDuk
-	/opt/apps/rhel7/bbmap/bbduk.sh in1=$read1 in2=$read2 \
+    # Perform adapter trimming with BBDuk
+    singularity exec --bind $wd $1 bbduk.sh in1=$read1 in2=$read2 \
 	literal=CTGTCTCTTATACACATCT out1=../1_trimadapter/$read1 \
 	out2=../1_trimadapter/$read2 \
 	ktrim=r k=19 mink=11 hdist=3 tbo tpe \
 	&>> ../1_trimadapter/BBDuk.out
 done
-

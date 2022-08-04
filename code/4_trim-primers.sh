@@ -7,15 +7,13 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
-# Usage: trim-primers.sh /marker-dir 
+# Usage: trim-primers.sh /container-dir /marker-dir 
 # where marker-dir is the directory containing reads that all share the same 
 # primer set 
-
-module load Anaconda3/5.1.0
-source activate /hpc/group/ldavidlab/modules/cutadapt-env
+# Example: sbatch --mail-user=youremail@duke.edu 4_trim-primers.sh /path/to/metabarcoding.sif path/to/XXXXXXXX_results
 
 # Go to amplicon directory
-cd $1
+cd $2
 mkdir 3_trimprimer
 
 # Read in primer sequences from file 
@@ -48,7 +46,7 @@ if ! ls 2_filter/*_R1.fastq.gz 1> /dev/null 2>&1; then
 		# --minimum-length: Set this parameter so cutadapt doesn't preserve empty reads 
 		# (length 0) in output, which can't be handled by DADA2
 
-		cutadapt \
+		singularity exec --bind $2 $1 cutadapt \
 		--minimum-length 1 --discard-untrimmed \
 		-a "^${rev:0};e=0.15...$fwdrc;e=0.15" \
 		-o 3_trimprimer/$fullname $read2 \
@@ -63,7 +61,7 @@ elif ! ls 2_filter/*_R2.fastq.gz 1> /dev/null 2>&1; then
 
 		# Do single-end trimming:
 		# R1 must have the correct amplicon primer anchored at 5' end
-		cutadapt \
+		singularity exec --bind $2 $1 cutadapt \
 		--minimum-length 1 --discard-untrimmed \
 		-a "^${fwd:0};e=0.15...$revrc;e=0.15" \
 		-o 3_trimprimer/$fullname $read1 \
@@ -87,7 +85,7 @@ else
 		# -o: The output file
 		# -p: The short form of 'paired output', a second output file alongside the normal -o output
 		# --minimum-length: Minimum length of reads preserved by cutadapt
-		cutadapt \
+		singularity exec --bind $2 $1 cutadapt \
 		--minimum-length 1 --discard-untrimmed \
 		-a "^${fwd:0};e=0.15...$revrc;e=0.15" \
 		-A "^${rev:0};e=0.15...$fwdrc;e=0.15" \
@@ -98,4 +96,3 @@ else
 	done
 fi
 
-conda deactivate # Close conda environment
