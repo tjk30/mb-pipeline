@@ -8,11 +8,11 @@ parent <- getwd()
 indir <- args[3]
 outdir <- args[4]
 
-library(dada2); packageVersion('dada2')
-library(dplyr); packageVersion('dplyr') # For data wrangling
-library(ggplot2); packageVersion('ggplot2') # For plots
-library(magrittr); packageVersion('magrittr') # For pipe
-library(tibble); packageVersion('tibble') # For enframe
+library(dada2, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('dada2')
+library(dplyr, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('dplyr') # For data wrangling
+library(ggplot2, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('ggplot2') # For plots
+library(magrittr, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('magrittr') # For pipe
+library(tibble, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('tibble') # For enframe
 
 # Find filenames ----------------------------------------------------------
 
@@ -65,8 +65,8 @@ filt.out <- filterAndTrim(fnFs, fnFs_filtN, fnRs, fnRs_filtN,
                           truncQ = 2,
                           minLen = 10, # trnL-P6 parameters (Taberlet)
                           maxLen = 143, # trnL-P6 parameters
-                          # minLen = 56, # 12SV5 parameters (Schneider)
-                          # maxLen = 132, # 12SV5 parameters
+                         # minLen = 56, # 12SV5 parameters (Schneider)
+                         # maxLen = 132, # 12SV5 parameters
                           multithread = TRUE)
 
 # Remove from our list files that now have 0 reads due to filtering

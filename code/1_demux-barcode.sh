@@ -11,9 +11,7 @@
 # This assumes that the sample sheet is located in the parent directory containing the MiniSeq results
 # folder
 
-source /data/davidlab/packages/miniconda3/etc/profile.d/conda.sh
-conda activate base
-
+module load bcl2fastq/2.20
 cd $1
 
 now=$(date +'%Y%m%d')
