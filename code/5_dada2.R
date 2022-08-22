@@ -9,11 +9,12 @@ parent <- getwd()
 indir <- args[3]
 outdir <- args[4]
 
-library(dada2, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('dada2')
-library(dplyr, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('dplyr') # For data wrangling
-library(ggplot2, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('ggplot2') # For plots
-library(magrittr, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('magrittr') # For pipe
-library(tibble, lib.loc="/hpc/group/ldavidlab/rpackages"); packageVersion('tibble') # For enframe
+library(ShortRead)
+library(dplyr); packageVersion('dplyr') # For data wrangling
+library(ggplot2); packageVersion('ggplot2') # For plots
+library(magrittr); packageVersion('magrittr') # For pipe
+library(tibble); packageVersion('tibble')
+library(tidyverse)
 
 # Find filenames ----------------------------------------------------------
 
@@ -215,7 +216,6 @@ if (exists('concats')){
 }
 
 # Count up reads at each step
-library(ShortRead)
 parent<-args[1]
 dirs<-c("0_raw_demux", "1_trimadapter","2_filter","3_trimprimer")
 for (dir in seq_along(dirs)) { #this loops through each output folder and counts up how many reads are in each sample file
