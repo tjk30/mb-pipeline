@@ -9,12 +9,13 @@ parent <- getwd()
 indir <- args[3]
 outdir <- args[4]
 
-library(ShortRead)
+library(ShortRead); packageVersion('ShortRead') # for reading fastq .files
 library(dplyr); packageVersion('dplyr') # For data wrangling
 library(ggplot2); packageVersion('ggplot2') # For plots
 library(magrittr); packageVersion('magrittr') # For pipe
 library(tibble); packageVersion('tibble')
-library(tidyverse)
+library(tidyverse); packageVersion('tidyverse')
+library(dada2); packageVersion('dada2')
 
 # Find filenames ----------------------------------------------------------
 
@@ -24,8 +25,6 @@ print(paste("Looking in ", path, " for read files"))
 # Generate matched lists of forward and reverse filenames
 fnFs <- sort(list.files(path, pattern = "R1.fastq.gz", full.names = TRUE))
 fnRs <- sort(list.files(path, pattern = "R2.fastq.gz", full.names = TRUE))
-if length(fnFs<1) stop("found no forward read files")
-if length(fnFs<1) stop("found no reverse read files")
 print(paste("Found", length(fnFs), "forward read files"))
 print(paste("Found", length(fnRs), "reverse read files"))
 # Inspect read quality profiles -------------------------------------------
