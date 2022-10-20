@@ -297,10 +297,7 @@ samdf['Undetermined', ] <- NA
 
 ```{r}
 # Convert taxonomy table to matrix format
-taxdf <- 
-     taxtab.lca %>%
-     column_to_rownames(var = 'asv') %>%
-     as.matrix()
+taxdf <- as.matrix(taxtab.lca)
 ```
 
 ## Assemble
