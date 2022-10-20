@@ -116,7 +116,10 @@ track.long <- mutate(track.long,
 ```
 
 ```{r}
-ggplot(track.long, aes(x = step, y = count, by = sample, group = sample)) +
+ggplot(track.long, aes(x = step, 
+                       y = count, 
+                       by = sample, 
+                       group = sample)) +
      geom_line(alpha = 0.5) +
      facet_wrap(~label, 
                 scales = 'free_y') +
@@ -156,6 +159,9 @@ sum(seqtab.merged)/sum(seqtab.concats)
 ```
 
 ```{r}
+# Collapse sequence variants that are substrings of one another
+# This helps handle single-base differences at the ends of reads after primer
+# trimming
 dim(seqtab.merged)
 seqtab.merged <- collapseNoMismatch(seqtab.merged)
 dim(seqtab.merged)
@@ -191,9 +197,9 @@ ref <- here('..',
             'trnL', 
             'trnLGH.fasta')
 
-taxtab.species <- assignSpecies_mod(seqtab.merged, 
-                                    refFasta = ref, 
-                                    tryRC = TRUE)
+taxtab.species <- MButils::assignSpecies_mod(seqtab.merged, 
+                                             refFasta = ref, 
+                                             tryRC = TRUE)
 ```
 
 How many ASVs unassigned?
@@ -210,201 +216,39 @@ sum(seqtab.merged[, unassigned])/sum(seqtab.merged)
 ```
 
 Now want to build out whole tree
+Now want to build out whole tree
 ```{r}
-# Separate ID from species name for querying
+# Get taxmap object
 taxtab.species <- 
      taxtab.species %>%
      separate(col = Species,
               into = c('index', 'label'), sep = '\\s',
               extra = 'merge')
 
-taxmap <- metacoder::lookup_tax_data(taxtab.species, 
-                                type = 'seq_id', 
-                                column = 'index')
-
-taxonomy <- metacoder::taxonomy_table(taxmap, 
-                                 use_ranks = c('superkingdom', 
-                                               'kingdom', 
-                                               'phylum', 
-                                               'order', 
-                                               'family',
-                                               'genus', 
-                                               'species', 
-                                               'subspecies',
-                                               'varietas',
-                                               'forma'))
-```
-
-Join to results.  This varies depending on the level of the name, so do multiple joins in ascending taxonomic order:
-- By form, if present
-- By variety, if present
-- Then by subspecies, if present
-- Then by species (always present)
-
-```{r}
-# If present, remove '(nom. inval.)' notation, which interferes with joins
-taxonomy <- 
-     mutate(taxonomy,
-            across(.fns = ~gsub(pattern = ' \\(nom\\. inval\\.\\)$',
-                                replacement = '',
-                                .x)))
+taxmap <- MButils::lookup_tax_data(taxtab.species, 
+                                   type = 'seq_id', 
+                                   column = 'index')
 ```
 
 ```{r}
-# Separate taxonomy table into these components
-# Form
-taxonomy.f <- filter(taxonomy, !is.na(forma))
-# Variety
-taxonomy.var <- filter(taxonomy, !is.na(varietas) & is.na(forma))
-# Subspecies
-taxonomy.ssp <- filter(taxonomy, !is.na(subspecies) & is.na(varietas) & is.na(forma))
-
-# Species
-# Had some trouble here with entries that terminate both at the species 
-# level and a subspecies level: For simplicity, just make a list of all species-level entries
-# This will ultimately be used in a right join so okay if there are 
-# some that won't be incorporated
-taxonomy.spp <- 
-     taxonomy %>% 
-     select(superkingdom:species) %>% 
-     distinct()
-```
-
-Now join each to name, accession, ASV sequence:
-
-```{r}
-# Form
-taxtab.f <- 
-     taxtab.species %>% 
-     left_join(taxonomy.f, by = c('label' = 'forma')) %>% 
-     filter(!is.na(species)) %>% 
-     select(asv, 
-            superkingdom, 
-            kingdom, 
-            phylum, 
-            order, 
-            family,
-            genus, 
-            species, 
-            subspecies, 
-            varietas,
-            forma = label)
+# Join to taxonomy
+taxtab.species <- MButils::asv_to_taxonomy(taxmap)
 ```
 
 ```{r}
-taxtab.var <- 
-     taxtab.species %>% 
-     left_join(taxonomy.var, by = c('label' = 'varietas')) %>% 
-     filter(!is.na(species)) %>% 
-     select(asv, 
-            superkingdom, 
-            kingdom, 
-            phylum, 
-            order, 
-            family,
-            genus, 
-            species, 
-            subspecies, 
-            varietas = label,
-            forma)
+# Get last common ancestor of all matched taxonomic assignments
+taxtab.lca <- MButils::lca(taxtab.species)
 ```
 
 ```{r}
-taxtab.ssp <- 
-     taxtab.species %>% 
-     left_join(taxonomy.ssp, by = c('label' = 'subspecies')) %>% 
-     filter(!is.na(species)) %>% 
-     select(asv, 
-            superkingdom, 
-            kingdom, 
-            phylum, 
-            order, 
-            family,
-            genus, 
-            species, 
-            subspecies = label, 
-            varietas,
-            forma)
-```
-
-```{r}
-# Missing columns will be filled with NA
-taxtab.spp <- 
-     taxtab.species %>% 
-     filter(!(asv %in% c(taxtab.f$asv,
-                         taxtab.var$asv,
-                         taxtab.ssp$asv))) %>% 
-     left_join(taxonomy.spp, by = c('label' = 'species')) %>%
-     select(asv, 
-            superkingdom, 
-            kingdom, 
-            phylum, 
-            order, 
-            family,
-            genus,
-            species = label) %>% 
-     mutate(subspecies = NA,
-            varietas = NA,
-            forma = NA) %>% 
-     distinct()
-```
-
-```{r}
-# Join all together
-taxtab <- 
-     bind_rows(taxtab.spp, 
-               taxtab.ssp,
-               taxtab.var,
-               taxtab.f)
-```
-
-```{r}
-any(!(taxtab.species$asv %in% taxtab$asv))
-```
-
-The dimensions are a bit different, but think this is because of excluding accession number?
-
-```{r}
-dim(taxtab.species)
-dim(taxtab)
-```
-
-#### Last common ancestor
-```{r}
-# Group by ASV
-lca <- 
-     taxtab %>%
-     group_by(asv) %>%
-     summarize_all(n_distinct, 
-                   na.rm = TRUE) %>%
-     column_to_rownames(var = 'asv')
-
-# Now, relabel all those with >1 name at a particular level as NA
-# As a placeholder, keep only the first species, knowing it will be overwritten
-taxtab.lca <- 
-     taxtab %>%
-     group_by(asv) %>%
-     summarize_all(first) %>%
-     column_to_rownames(var = 'asv')
-```
-
-Now do relabeling 
-```{r}
-# Confirm ordering is okay
-all(rownames(lca) == rownames(taxtab.lca))
-
-taxtab.lca[lca > 1] = NA
-taxtab.lca <- 
-     rownames_to_column(taxtab.lca, var = 'asv')
-```
-
-```{r}
+# To what label are assignments made?
 colSums(!is.na(taxtab.lca))/nrow(taxtab.lca)
 ```
 
 ```{r}
+# Save a FASTA file of unlabeled sequences for upload to BLAST
 blast <- 
-     taxtab %>%
+     taxtab.species %>%
      filter(is.na(superkingdom)) %>%
      pull(asv)
 
@@ -416,8 +260,8 @@ blast <- Biostrings::DNAStringSet(blast)
 #                             here('data',
 #                                  'processed',
 #                                  'miniseq',
-#                                  '20211222',
-#                                  '20220505_no_tax_assignment.fasta'))
+#                                  '[RUN DATE],
+#                                  'No_tax_assignment.fasta'))
 ```
 
 # Make phyloseq object
