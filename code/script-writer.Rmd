@@ -1,0 +1,46 @@
+---
+title: "Diet Metabarcoding Script Writer"
+output: html_notebook
+---
+
+
+```{r}
+#enter your email and run info here
+email='youremail'
+runfolder='/path/to/miniseq-dir'
+samplesheet='XXXXXXXX_samplesheet.csv'
+container='/path/to/metabarcoding.sif'
+runtype='trnL or 12SV5' 
+
+## EXAMPLE
+  # email="tjk30@duke.edu"
+  # runfolder='/hpc/group/ldavidlab/users/tjk30/2022-05-25_trnL-TOHOBot/220525_MN00462_0219_A000H3TMLN'
+  # samplesheet='20220413_samplesheet.csv'
+  # container='/hpc/group/ldavidlab/users/tjk30/modules/metabarcoding.sif'
+  # runtype='trnL'
+```
+
+
+```{r}
+print(paste0("sbatch --mail-user=",email," 1_demux_barcode.sh ", container, " ", runfolder, " ", samplesheet," ", runtype))
+```
+
+Open up the computing cluster. Copy the command you just generated with the above code chunk (making sure not to copy the quotation marks). Open up the command line again (where you already have the computing cluster open) and paste the command. If you have entered your run info correctly, it will demultiplex your sequence run and generate a XXXXXXXX_results folder. You will need the name of this folder as an input for the following pipeline steps
+
+```{r}
+#enter results folder info 
+resultsfolder='XXXXXXXX_results' #will have been generated automatically by 1_demux_barcode.sh as <year><month><day>_results--enter the exact folder name here
+```
+
+Now run this code chunk to write the remaining sbatch commands:
+
+
+```{r}
+runres=paste0(runfolder, "/", resultsfolder)
+print(paste0("sbatch --mail-user=",email, " 2_trim-adapter.sh ", container, " ", runres))
+print(paste0("sbatch --mail-user=",email, " 3_filter-primers.sh ", container, " ", runres))
+print(paste0("sbatch --mail-user=",email, " 4_trim-primers.sh ", container, " ", runres))
+print(paste0("sbatch --mail-user=",email, " 5_dada2.sh ", runres, " 3_trimprimer 4_dada2output ", container))
+```
+
+Run each of these sequentially. 
