@@ -2,8 +2,8 @@
 #SBATCH --job-name=2_trim-adapter
 #SBATCH --partition scavenger
 #SBATCH --mem=20000
-#SBATCH --out=2_trim-adapter-%j.out
-#SBATCH --error=2_trim-adapter-%j.err
+#SBATCH --out=2_trim-adapter.out
+#SBATCH --error=2_trim-adapter.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
@@ -14,6 +14,7 @@
 # primer set
 # This trims off read-through into Illumina adapter at the 3' side of the read,
 # which can occur if the amplicon size is <150 bp.
+codedir=$PWD
 cd $2
 cd ..
 wd=$PWD
@@ -31,3 +32,6 @@ for read1 in *R1_001.fastq.gz; do
 	ktrim=r k=19 mink=11 hdist=3 tbo tpe \
 	&>> ../1_trimadapter/BBDuk.out
 done
+# move .out and .err files
+mv $codedir/2_trim-adapter.out $2/Reports
+mv $codedir/2_trim-adapter.err $2/Reports
