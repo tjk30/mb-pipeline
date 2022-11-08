@@ -2,8 +2,8 @@
 #SBATCH --job-name=1_demux-barcode
 #SBATCH --mem=20000
 #SBATCH --partition scavenger 
-#SBATCH --out=1_demux-barcode-%j.out
-#SBATCH --error=1_demux-barcode-%j.err
+#SBATCH --out=1_demux-barcode.out
+#SBATCH --error=1_demux-barcode.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
@@ -11,10 +11,10 @@
 # Example: sbatch --mail-user=youremail@duke.edu 1_demux-barcode.sh /path/to/metabarcoding.sif path/to/miniseq-dir XXXXXXXX_sample-sheet.csv <trnL>OR<12SV5>
 # This assumes that the sample sheet is located in the parent directory containing the MiniSeq results
 # folder
+codedir=$PWD
 cd $2
 cd ..
 parent=$PWD
-cd $2
 now=$(date +'%Y%m%d')
 outdir=$now'_results'
 mkdir $outdir
@@ -56,3 +56,8 @@ mv $outdir/*.fastq.gz $outdir/0_raw_all/
 
 # Remove duplicate Reports and Stats directories
 rm -r $outdir/Reports $outdir/Stats
+
+# move .out and .err files
+mkdir $outdir/Reports
+mv $codedir/1_demux-barcode.out $outdir/Reports
+mv $codedir/1_demux-barcode.err $outdir/Reports
