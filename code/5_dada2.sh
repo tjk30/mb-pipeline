@@ -3,8 +3,8 @@
 #SBATCH --partition scavenger
 #SBATCH --mem=64000
 #SBATCH -n 2  # Number of cores
-#SBATCH --out=5_dada2-%j.out
-#SBATCH --error=5_dada2-%j.err
+#SBATCH --out=5_dada2.out
+#SBATCH --error=5_dada2.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
@@ -18,3 +18,7 @@ mkdir $1/$3
 
 # Run dada2
 singularity exec --bind $1,$PWD $4 Rscript 5_Rscript-echo.R 5_dada2.R $1 $2 $3
+
+# cleanup
+mv 5_dada2.out $1/Reports
+mv 5_dada2.err $1/Reports
