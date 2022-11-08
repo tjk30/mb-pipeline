@@ -2,13 +2,13 @@
 #SBATCH --job-name=3_filter-primers
 #SBATCH --partition scavenger
 #SBATCH --mem=20000
-#SBATCH --out=3_filter-primers-%j.out
-#SBATCH --error=3_filter-primers-%j.err
+#SBATCH --out=3_filter-primers.out
+#SBATCH --error=3_filter-primers.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
 # Usage: sbatch --mail-user=youremail@duke.edu 3_filter-primers.sh /path/to/metabarcoding.sif path/to/XXXXXXXX_results
-
+codedir=$PWD
 cd $2
 mkdir 2_filter
 
@@ -69,3 +69,7 @@ else
 		> 2_filter/$name.out
 	done
 fi
+
+# move output files
+mv $codedir/3_filter-primers.out $2/Reports
+mv $codedir/3_filter-primers.err $2/Reports
