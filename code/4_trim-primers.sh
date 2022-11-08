@@ -2,8 +2,8 @@
 #SBATCH --job-name=4_trim-primers
 #SBATCH --partition scavenger
 #SBATCH --mem=20000
-#SBATCH --out=4_trim-primers-%j.out
-#SBATCH --error=4_trim-primers-%j.err
+#SBATCH --out=4_trim-primers.out
+#SBATCH --error=4_trim-primers.err
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
@@ -11,7 +11,7 @@
 # where marker-dir is the directory containing reads that all share the same 
 # primer set 
 # Example: sbatch --mail-user=youremail@duke.edu 4_trim-primers.sh /path/to/metabarcoding.sif path/to/XXXXXXXX_results
-
+$codedir=$PWD
 # Go to amplicon directory
 cd $2
 mkdir 3_trimprimer
@@ -95,4 +95,6 @@ else
 
 	done
 fi
-
+# cleanup
+mv $codedir/4_trim-primers.out $2/Reports
+mv $codedir/4_trim-primers.err $2/Reports
