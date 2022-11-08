@@ -22,7 +22,7 @@ runtype='trnL or 12SV5'
 
 
 ```{r}
-print(paste0("sbatch --mail-user=",email," 1_demux_barcode.sh ", container, " ", runfolder, " ", samplesheet," ", runtype))
+print(paste0("sbatch --mail-user=",email," 1_demux-barcode.sh ", container, " ", runfolder, " ", samplesheet," ", runtype))
 ```
 
 Open up the computing cluster. Copy the command you just generated with the above code chunk (making sure not to copy the quotation marks). Open up the command line again (where you already have the computing cluster open) and paste the command. If you have entered your run info correctly, it will demultiplex your sequence run and generate a XXXXXXXX_results folder. You will need the name of this folder as an input for the following pipeline steps
