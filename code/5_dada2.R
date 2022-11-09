@@ -186,7 +186,7 @@ if (exists('concats')){
 }
 
 # Count up reads at each step
-parent<-args[1]
+parent<-args[2]
 dirs<-c("0_raw_demux", "1_trimadapter","2_filter","3_trimprimer")
 for (dir in seq_along(dirs)) { #this loops through each output folder and counts up how many reads are in each sample file
     folder<-file.path(parent,dirs[dir])
