@@ -26,7 +26,7 @@ row.names(track.pipeline)<-NULL
 track.pipeline<-distinct(track.pipeline)
 track.pipeline
 write.csv(track.pipeline, file.path(parent,"4_dada2output","track_pipeline.csv"), row.names=FALSE) #write csv with reads at preceding steps
-track<-readRDS(file.path(parent,"4_dada2output","track.rds")
+track<-readRDS(file.path(parent,"4_dada2output","track.rds"))
 track <- left_join(track.pipeline, track, by = c('sample', 
                                                  'primer_trim' = 'input'))
 track.long <- pivot_longer(track, 
