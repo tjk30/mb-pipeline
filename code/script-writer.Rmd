@@ -29,14 +29,13 @@ Open up the computing cluster. Copy the command you just generated with the abov
 
 ```{r}
 #enter results folder info 
-resultsfolder='XXXXXXXX_results' #will have been generated automatically by 1_demux_barcode.sh as <year><month><day>_results--enter the exact folder name here
+runres='/path/to/XXXXXXXX_results' #will have been generated automatically by 1_demux_barcode.sh as <year><month><day>_results--enter the exact folder name with its file path here
 ```
 
 Now run this code chunk to write the remaining sbatch commands:
 
 
 ```{r}
-runres=paste0(runfolder, "/", resultsfolder)
 print(paste0("sbatch --mail-user=",email, " 2_trim-adapter.sh ", container, " ", runres))
 print(paste0("sbatch --mail-user=",email, " 3_filter-primers.sh ", container, " ", runres))
 print(paste0("sbatch --mail-user=",email, " 4_trim-primers.sh ", container, " ", runres))
