@@ -16,7 +16,8 @@ cd $2
 cd ..
 parent=$PWD
 now=$(date +'%Y%m%d')
-outdir=$now'_results'
+resFolder=$now'_results'
+outdir=$parent/$resFolder
 mkdir $outdir
 
 mkdir $outdir/0_reference
@@ -38,7 +39,7 @@ GCATAGTGGGGTATCTAA" >> $outdir/0_reference/primers.txt #these are 12SV5 primers
 else
 echo "ERROR: please enter exactly 'trnL' or '12SV5' as your run type"
 fi
-
+cd $2
 # Demultiplex
 singularity exec --bind $parent $1 bcl2fastq -o $outdir --interop-dir InterOp/$now --stats-dir Stats/$now --reports-dir Reports/$now --minimum-trimmed-read-length 0 --mask-short-adapter-reads 0 --sample-sheet $parent/$3
 
