@@ -1,7 +1,10 @@
+library(ShortRead); packageVersion('ShortRead') # for reading fastq .files
+library(dplyr); packageVersion('dplyr') # For data wrangling
+library(ggplot2); packageVersion('ggplot2') # For plots
+library(magrittr); packageVersion('magrittr') # For pipe
+library(tibble); packageVersion('tibble')
+library(tidyverse); packageVersion('tidyverse')
 library(dada2)
-library(phyloseq)
-library(magrittr)
-library(tidyverse)
 # Count up reads at each step
 parent<-args[1]
 dirs<-c("0_raw_demux", "1_trimadapter","2_filter","3_trimprimer")
