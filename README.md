@@ -93,14 +93,14 @@ After this script has finished, you should see the following file structure:
 /seqdata 
   -########_samplesheet.csv 
   -miniseq-dir
-    -XXXXXXXX_results
-      -0_reference
-        -primers.txt
-      -1_raw_demux
+  -XXXXXXXX_results
+     -0_reference
+       -primers.txt
+     -1_raw_demux
         #all of your demultiplexed .fastq files will be here
-      -1_raw_all
-        Undetermined_S0_L001_R1_001.fastq
-        Undetermined_S0_L001_R2_001.fastq # these files contain everything, included PhiX and all reads that didn't match to the barcodes you input
+     -1_raw_all
+       Undetermined_S0_L001_R1_001.fastq
+       Undetermined_S0_L001_R2_001.fastq # these files contain everything, included PhiX and all reads that didn't match to the barcodes you input
 ```
 Check the .out and .err files to make sure that everything went smoothly
 ### Troubleshooting
