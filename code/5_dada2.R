@@ -6,8 +6,9 @@ print(args)
 
 setwd(args[2]) 
 parent <- getwd()
-indir <- args[3]
-outdir <- args[4]
+runType<-args[3]
+indir <- paste0('3_trimprimer_',runType)
+outdir <- '4_dada2output'
 
 library(ShortRead); packageVersion('ShortRead') # for reading fastq .files
 library(dplyr); packageVersion('dplyr') # For data wrangling
@@ -34,14 +35,23 @@ print(paste("Found", length(fnRs), "reverse read files"))
 fnFs_filtN <- file.path(path, "filtN", basename(fnFs)) 
 fnRs_filtN <- file.path(path, "filtN", basename(fnRs))
 
+if (runType%in%c('trnL','trnl') { 
+  print('You have selected trnL parameters')
+minLen = 10 # trnL-P6 parameters (Taberlet)
+maxLen = 143, # trnL-P6 parameters } 
+  if (runType%in%c('12SV5','12sv5') {
+    print('You have selected 12SV5 parameters')
+  minLen = 56 # 12SV5 parameters (Schneider)
+  maxLen = 132 # 12SV5 parameters }
+    else {print('Error: please indicate "trnL" or "12SV5" as the filterAndTrim parameters') 
+         stopifnot(runType%in%c('trnL','trnl','12SV5','12sv5')}
+
 filt.out <- filterAndTrim(fnFs, fnFs_filtN, fnRs, fnRs_filtN, 
                           maxN = 0, 
                           maxEE = 2,
                           truncQ = 2,
-                          minLen = 10, # trnL-P6 parameters (Taberlet)
-                          maxLen = 143, # trnL-P6 parameters
-                         # minLen = 56, # 12SV5 parameters (Schneider)
-                         # maxLen = 132, # 12SV5 parameters
+                          minLen = minLen, 
+                          maxLen = maxLen, 
                           multithread = TRUE)
 
 # Remove from our list files that now have 0 reads due to filtering
@@ -81,9 +91,9 @@ errR <- learnErrors(fnRs_filtN, multithread = TRUE, verbose=1)
 
 # Visualize estimated error rates
 p <- plotErrors(errF, nominalQ = TRUE)
-ggsave("dada_errors_F.png", plot = p)
+ggsave(paste0(runType,"_dada_errors_F.png", plot = p))
 p <- plotErrors(errR, nominalQ = TRUE)
-ggsave("dada_errors_R.png", plot = p)
+ggsave(paste0(runType,"_dada_errors_R.png", plot = p))
 
 # Dereplicate identical reads
 derepFs <- derepFastq(fnFs_filtN, verbose = TRUE)
@@ -101,12 +111,12 @@ names(derepRs) <- sample_names
 dadaFs <- dada(derepFs, err = errF, multithread = TRUE)
 dadaRs <- dada(derepRs, err = errR, multithread = TRUE)
 
-saveRDS(dadaFs, 'dadaFs.rds')
-saveRDS(dadaRs, 'dadaRs.rds')
+saveRDS(dadaFs, paste0(runType,'_dadaFs.rds'))
+saveRDS(dadaRs, paste0(runType,'_dadaRs.rds'))
 
 # Merge paired reads 
 mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs, verbose = TRUE)
-saveRDS(mergers, 'mergers.rds')
+saveRDS(mergers, paste0(runType,'_mergers.rds'))
 head(mergers)
 
 # If less than 75% of reads merge, also build sequence table with concatenated
@@ -120,14 +130,14 @@ if (any((sapply(mergers, getN)/sapply(dadaFs, getN)) < 0.75)){
      print('Fewer than 75% of reads merged, generating concatenated table')
      concats <- mergePairs(dadaFs, derepFs, dadaRs, derepRs, verbose = TRUE,
                            justConcatenate=TRUE)
-     saveRDS(concats, 'concats.rds')
+     saveRDS(concats, paste0(runType,'_concats.rds'))
 }
 
 # Construct Sequence Table ------------------------------------------------
 
 seqtab <- makeSequenceTable(mergers)
 dim(seqtab)
-saveRDS(seqtab, "seqtab.rds")
+saveRDS(seqtab, paste0(runType,"_seqtab.rds"))
 
 # Inspect distribution of sequence lengths
 table(nchar(getSequences(seqtab)))
@@ -135,7 +145,7 @@ table(nchar(getSequences(seqtab)))
 if (exists('concats')){
      seqtab_concats <- makeSequenceTable(concats)
      dim(seqtab_concats)
-     saveRDS(seqtab_concats, "seqtab_concats.rds")
+     saveRDS(seqtab_concats, paste0(runType,"_seqtab_concats.rds"))
      table(nchar(getSequences(seqtab_concats)))
 }
 
@@ -145,7 +155,7 @@ seqtab_nochim <- removeBimeraDenovo(seqtab, method="consensus",
                                     multithread=TRUE, verbose=TRUE)
 dim(seqtab_nochim)
 sum(seqtab_nochim)/sum(seqtab)
-saveRDS(seqtab_nochim, "seqtab_nochim.rds")
+saveRDS(seqtab_nochim, paste0(runType,"_seqtab_nochim.rds"))
 
 # Track reads through pipeline
 filt.out %>%
@@ -174,7 +184,7 @@ rowSums(seqtab_nochim) %>%
        nonchim
 track %<>% full_join(nonchim, by=c("sample"))
 
-saveRDS(track, "track.rds")
+saveRDS(track, paste0(runType,"_track.rds"))
 
 if (exists('concats')){
      seqtab_nochim_concats <- removeBimeraDenovo(seqtab_concats, 
@@ -182,6 +192,6 @@ if (exists('concats')){
                                                  multithread=TRUE, verbose=TRUE)
      dim(seqtab_nochim_concats)
      sum(seqtab_nochim_concats)/sum(seqtab_concats)
-     saveRDS(seqtab_nochim_concats, "seqtab_nochim_concats.rds")
+     saveRDS(seqtab_nochim_concats, paste0(runType,"_seqtab_nochim_concats.rds"))
 }
 
