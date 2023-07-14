@@ -7,14 +7,34 @@
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-type=END
 
-# Usage: trim-primers.sh /container-dir /marker-dir 
-# where marker-dir is the directory containing reads that all share the same 
-# primer set 
-# Example: sbatch --mail-user=youremail@duke.edu 4_trim-primers.sh /path/to/metabarcoding.sif path/to/XXXXXXXX_results
+# Usage: trim-primers.sh /container-dir /marker-dir runType
+# where marker-dir is the directory containing reads that all share the same primer set 
+# and runType is if you are trimming 12SV5 or trnL primers
+# Example: sbatch --mail-user=youremail@duke.edu 4_trim-primers.sh /path/to/metabarcoding.sif path/to/XXXXXXXX_results <trnL>OR<12SV5>
 $codedir=$PWD
 # Go to amplicon directory
 cd $2
-mkdir 3_trimprimer
+$outdir='3_trimprimer_'$3
+mkdir $outdir
+mkdir 0_reference
+
+if [[ "$3" = "trnL" ]]
+then
+echo "You have selected trnL as your run type"
+echo "GGGCAATCCTGAGCCAA 
+CCATTGAGTCTCTGCACCTATC
+TTGGCTCAGGATTGCCC
+GATAGGTGCAGAGACTCAATGG" >> 0_reference/primers.txt #these are the trnLGH primer sequences
+elif [[ "$3" = "12SV5" ]]
+then
+echo "You have selected 12SV5 as your run type"
+echo "TAGAACAGGCTCCTCTAG
+TTAGATACCCCACTATGC
+CTAGAGGAGCCTGTTCTA
+GCATAGTGGGGTATCTAA" >> 0_reference/primers.txt #these are 12SV5 primers
+else
+echo "ERROR: please enter exactly 'trnL' or '12SV5' as your run type"
+fi
 
 # Read in primer sequences from file 
 # (in order: 
@@ -49,8 +69,8 @@ if ! ls 2_filter/*_R1.fastq.gz 1> /dev/null 2>&1; then
 		singularity exec --bind $2 $1 cutadapt \
 		--minimum-length 1 --discard-untrimmed \
 		-a "^${rev:0};e=0.15...$fwdrc;e=0.15" \
-		-o 3_trimprimer/$fullname $read2 \
-		> 3_trimprimer/$name.out	
+		-o $outdir/$fullname $read2 \
+		> $outdir/$name.out	
 	done
 # Is R2 missing?  
 elif ! ls 2_filter/*_R2.fastq.gz 1> /dev/null 2>&1; then
@@ -64,8 +84,8 @@ elif ! ls 2_filter/*_R2.fastq.gz 1> /dev/null 2>&1; then
 		singularity exec --bind $2 $1 cutadapt \
 		--minimum-length 1 --discard-untrimmed \
 		-a "^${fwd:0};e=0.15...$revrc;e=0.15" \
-		-o 3_trimprimer/$fullname $read1 \
-		> 3_trimprimer/$name.out	
+		-o $outdir/$fullname $read1 \
+		> $outdir/$name.out	
 	done
 # Both reads present, perform paired-end trimming
 else
@@ -89,9 +109,9 @@ else
 		--minimum-length 1 --discard-untrimmed \
 		-a "^${fwd:0};e=0.15...$revrc;e=0.15" \
 		-A "^${rev:0};e=0.15...$fwdrc;e=0.15" \
-		-o 3_trimprimer/$name$suffix1 -p 3_trimprimer/$name$suffix2 \
+		-o $outdir/$name$suffix1 -p $outdir/$name$suffix2 \
 		$read1 $read2 \
-		> 3_trimprimer/$name.out
+		> $outdir/$name.out
 
 	done
 fi
