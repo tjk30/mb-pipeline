@@ -47,7 +47,8 @@ DATE_results
 Clone this repo to the computing cluster:
 ```
 #navigate to where you want to store the scripts
-git clone https://github.com/bpetrone/mb-pipeline.git
+git clone https://github.com/tjk30/mb-pipeline.git
+
 ```
 
 After getting your data off of the sequencer, upload it to the computing cluster. For example, here is how you would upload to the DCC:
